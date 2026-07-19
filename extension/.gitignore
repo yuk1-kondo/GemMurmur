@@ -1,0 +1,7 @@
+dist/
+chrome-extension
+node_modules/
+public/wasm/
+icons/
+.DS_Store
+*.local
