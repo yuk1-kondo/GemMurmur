@@ -40,6 +40,14 @@ export function pickColor(draftEmphasis: number, preferDarkText: boolean): Accen
   return preferDarkText ? 'black' : 'white'
 }
 
+/** Wilder color mix for slang / crowd reactions. */
+export function pickSlangColor(preferDarkText: boolean): AccentColor {
+  const roll = Math.random()
+  if (roll < 0.3) return preferDarkText ? 'black' : 'white'
+  const accents: AccentColor[] = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'pink']
+  return accents[Math.floor(Math.random() * accents.length)]
+}
+
 export function pickSize(
   emphasis: number,
   density: DensityMode,
@@ -63,6 +71,15 @@ export function pickSize(
   return 'xl'
 }
 
+/** Fully random size for slang comments. */
+export function pickSlangSize(): CommentSize {
+  const roll = Math.random()
+  if (roll < 0.2) return 'small'
+  if (roll < 0.45) return 'medium'
+  if (roll < 0.75) return 'large'
+  return 'xl'
+}
+
 export function pickPlacement(
   category: CommentCategory,
   emphasis: number,
@@ -75,6 +92,18 @@ export function pickPlacement(
   if (emphasis > 0.75 && roll < 0.22) return roll < 0.5 ? 'top' : 'bottom'
   if (category === 'long_session' && roll < 0.28) return 'top'
   return 'scroll'
+}
+
+/**
+ * Random placement for slang: scroll / center / subtitle band (top・bottom).
+ * Weighted toward scroll so the stream stays readable.
+ */
+export function pickSlangPlacement(): 'scroll' | 'top' | 'bottom' | 'center' {
+  const roll = Math.random()
+  if (roll < 0.5) return 'scroll'
+  if (roll < 0.68) return 'top'
+  if (roll < 0.86) return 'bottom'
+  return 'center'
 }
 
 export function durationForText(text: string, size: CommentSize): number {

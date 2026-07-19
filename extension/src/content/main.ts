@@ -7,6 +7,6 @@ installMessageListener()
 installContentStorageSync()
 void bootstrap().catch((error) => {
   if (isExtensionContextValid()) {
-    console.error('Murmur content initialization failed:', error)
+    console.error('GemMurmur content initialization failed:', error)
   }
 })

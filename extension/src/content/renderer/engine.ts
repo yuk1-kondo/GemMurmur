@@ -11,6 +11,9 @@ import {
   pickColor,
   pickPlacement,
   pickSize,
+  pickSlangColor,
+  pickSlangPlacement,
+  pickSlangSize,
   resetBackgroundCache,
   textShadow,
 } from './style'
@@ -63,9 +66,16 @@ export class CommentRenderer {
     if (this.textLedger.has(draft.text)) return
     this.textLedger.add(draft.text)
     const darkBg = estimateBackgroundIsDark()
-    const size = pickSize(draft.emphasis, this.density, draft.text, draft.importance)
-    const placement = pickPlacement(draft.category, draft.emphasis, draft.text)
-    const color = pickColor(draft.emphasis, !darkBg)
+    const slangy = draft.source === 'interaction' || draft.category === 'crowd'
+    const size = slangy
+      ? pickSlangSize()
+      : pickSize(draft.emphasis, this.density, draft.text, draft.importance)
+    const placement =
+      draft.preferredPlacement ??
+      (slangy
+        ? pickSlangPlacement()
+        : pickPlacement(draft.category, draft.emphasis, draft.text))
+    const color = slangy ? pickSlangColor(!darkBg) : pickColor(draft.emphasis, !darkBg)
     const durationMs = durationForText(draft.text, size)
     const display: DisplayComment = {
       ...draft,

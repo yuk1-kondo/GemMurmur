@@ -219,7 +219,6 @@ export function startRuntime(state: RuntimeState): void {
 
   runtime.detector?.dispose()
   runtime.detector = new InteractionDetector((event) => {
-    // Only mouse-cursor reactions are enabled; other operation comments stay off.
     showInteractionComment(event, runtime.language)
   })
 

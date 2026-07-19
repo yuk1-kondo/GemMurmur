@@ -18,6 +18,7 @@ export class InteractionDetector {
   private lastMouseY = 0
   private lastMouseAt = 0
   private mouseDirChanges: Array<{ sign: number; at: number }> = []
+  private scrollSamples: Array<{ y: number; at: number }> = []
 
   constructor(onEvent: Handler) {
     this.onEvent = onEvent
@@ -106,12 +107,22 @@ export class InteractionDetector {
     if (this.disposed) return
     const now = performance.now()
     const y = window.scrollY
-    const dt = Math.max(16, now - this.lastScrollAt)
-    const dy = Math.abs(y - this.lastScrollY)
-    const screensPerSec = (dy / window.innerHeight) / (dt / 1000)
 
-    if (screensPerSec >= INTERACTION.fastScrollScreensPerSec) {
-      this.emit('fast_scroll')
+    // Rolling-window speed: per-event dy/dt is too noisy on trackpads.
+    this.scrollSamples.push({ y, at: now })
+    const windowMs = INTERACTION.fastScrollSampleMs
+    this.scrollSamples = this.scrollSamples.filter((s) => now - s.at <= windowMs)
+    if (this.scrollSamples.length >= 2) {
+      const first = this.scrollSamples[0]
+      const last = this.scrollSamples[this.scrollSamples.length - 1]
+      const spanMs = Math.max(40, last.at - first.at)
+      const distance = Math.abs(last.y - first.y)
+      if (distance >= INTERACTION.fastScrollMinDistancePx) {
+        const screensPerSec = distance / window.innerHeight / (spanMs / 1000)
+        if (screensPerSec >= INTERACTION.fastScrollScreensPerSec) {
+          this.emit('fast_scroll', INTERACTION.fastScrollCooldownMs)
+        }
+      }
     }
 
     const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)

@@ -7,7 +7,7 @@ const outDir = resolve(root, 'dist')
 const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'))
 
 const readme = [
-  'Murmur 拡張機能の読み込み方',
+  'GemMurmur 拡張機能の読み込み方',
   '',
   `バージョン: ${pkg.version}`,
   '',

@@ -5,7 +5,7 @@ import { isStopped } from '@/shared/runtime-guards'
 import { USER_MESSAGES } from '@/shared/user-messages'
 import { isExtensionContextValid } from './extension-context'
 import { requestGemmaIfReady } from './gemma-client'
-import { onDensityChange } from './rule-feed'
+import { onDensityChange, showThinkingMurmurs } from './rule-feed'
 import { applyDemoToggle, isDemoBuzzActive } from './demo-toggles'
 import { armSpawnLoop } from './spawn-loop'
 import { refreshAmbientLoop, startRuntime, stopRuntime } from './lifecycle'
@@ -50,11 +50,17 @@ export function installMessageListener(): void {
     }
 
     if (message.type === 'SHOW_STATUS') {
+      // Gemma thinking → scroll as comments (nicer than a corner badge).
+      if (message.message === USER_MESSAGES.gemmaThinking) {
+        showThinkingMurmurs(runtime.language)
+        return
+      }
       runtime.renderer?.showStatus(message.message, message.level, message.placement)
       return
     }
 
     if (message.type === 'CLEAR_STATUS') {
+      // Thinking murmurs are real comments; nothing corner-specific to clear.
       runtime.renderer?.clearStatus()
       return
     }

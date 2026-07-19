@@ -85,6 +85,8 @@ export interface CommentDraft {
   source: 'rule' | 'gemma' | 'interaction'
   createdAt: number
   expiresAt: number
+  /** When set, renderer uses this placement instead of its usual picker. */
+  preferredPlacement?: CommentPlacement
 }
 
 export interface DisplayComment extends CommentDraft {

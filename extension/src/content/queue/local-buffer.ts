@@ -87,12 +87,9 @@ export class LocalCommentBuffer {
       return Math.round(base * pause)
     }
 
-    // Uniform-ish spread across the jitter range so comments don't clump.
     const factor =
       DISPLAY.spawnJitterMin + Math.random() * (DISPLAY.spawnJitterMax - DISPLAY.spawnJitterMin)
-    // Occasional "early" or "late" kick for a more organic feel.
-    const kick = Math.random() < 0.18 ? 0.55 + Math.random() * 0.35 : 0.85 + Math.random() * 0.35
-    return Math.round(base * factor * kick)
+    return Math.round(base * factor)
   }
 
   /** Gap between two comments inside the same burst. */

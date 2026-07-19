@@ -21,7 +21,7 @@ export function mountOverlayControls(
 
   const controls = document.createElement('div')
   controls.className = 'murmur-controls'
-  controls.setAttribute('aria-label', 'Murmur controls')
+  controls.setAttribute('aria-label', 'GemMurmur controls')
 
   const labels = LABELS[language]
   const button = document.createElement('button')

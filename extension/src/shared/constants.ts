@@ -1,7 +1,7 @@
 /** Spec §11 — provisional queue values */
 export const QUEUE = {
   batchSize: 8,
-  minBuffer: 6,
+  minBuffer: 4,
   targetBuffer: 16,
   maxBuffer: 32,
   ttlMs: 90_000,
@@ -15,14 +15,23 @@ export const COMMENT_LENGTH = {
 
 /** Spec §15 — interaction thresholds */
 export const INTERACTION = {
-  fastScrollScreensPerSec: 2.5,
+  /**
+   * Fast-scroll slang fires when average speed over the sample window
+   * reaches this many viewport-heights per second. ~0.9 ≈ brisk trackpad skim.
+   */
+  fastScrollScreensPerSec: 0.9,
+  /** Window used to measure scroll speed (instant per-event speed is too noisy). */
+  fastScrollSampleMs: 280,
+  /** Minimum distance in the sample window before speed is evaluated. */
+  fastScrollMinDistancePx: 120,
   idleMs: 30_000,
   oscillateWindowMs: 20_000,
   oscillatePasses: 3,
   rapidClickWindowMs: 3_000,
   rapidClickCount: 5,
   tabReturnAwayMs: 30_000,
-  sameEventCooldownMs: 45_000,
+  /** Per-operation cooldown (scroll / idle / etc.). Shorter = livelier crowd. */
+  sameEventCooldownMs: 18_000,
   sameTextCooldownMs: 20 * 60_000,
   /** Mouse-cursor reactions (shake / fast sweep). */
   mouseFastPxPerMs: 2.5,
@@ -31,7 +40,9 @@ export const INTERACTION = {
   mouseShakeWindowMs: 800,
   mouseShakeMinDeltaPx: 6,
   /** Mouse reactions should feel responsive, so use a short per-event cooldown. */
-  mouseEventCooldownMs: 9_000,
+  mouseEventCooldownMs: 7_000,
+  /** Fast-scroll slang can repeat often while the user keeps skimming. */
+  fastScrollCooldownMs: 2_400,
 } as const
 
 /** Spec §13 — buzz mode */
@@ -83,21 +94,21 @@ export const DISPLAY = {
   normalLaneCount: 9,
   busyLaneCount: 13,
   buzzLaneCount: 18,
-  spawnIntervalNormalMs: 3_400,
-  spawnIntervalBusyMs: 1_800,
-  spawnIntervalBuzzMs: 520,
+  spawnIntervalNormalMs: 2_000,
+  spawnIntervalBusyMs: 1_100,
+  spawnIntervalBuzzMs: 380,
   /** Multiply base spawn interval by random factor in [min, max] */
-  spawnJitterMin: 0.35,
-  spawnJitterMax: 2.8,
+  spawnJitterMin: 0.55,
+  spawnJitterMax: 1.85,
   /** Chance of a short burst (2–3 comments close together) */
-  spawnBurstChance: 0.07,
+  spawnBurstChance: 0.12,
   /** Chance of a longer quiet gap between comments */
-  spawnPauseChance: 0.16,
-  spawnPauseMultiplierMin: 2.6,
-  spawnPauseMultiplierMax: 5.8,
+  spawnPauseChance: 0.08,
+  spawnPauseMultiplierMin: 2.0,
+  spawnPauseMultiplierMax: 3.6,
   /** Extra random gap between comments inside the same burst (ms). */
-  burstStaggerMinMs: 120,
-  burstStaggerMaxMs: 720,
+  burstStaggerMinMs: 80,
+  burstStaggerMaxMs: 420,
   /** Per-comment font scale multiplier range */
   fontSizeScaleMin: 0.78,
   fontSizeScaleMax: 1.48,
@@ -124,15 +135,18 @@ export const GENERATION = {
   // exceed the prompt size plus generated output or generation is rejected.
   maxSequenceTokens: 2_048,
   gemmaBatchCap: 8,
-  gemmaRefillMinGapMs: 8_000,
+  gemmaRefillMinGapMs: 5_000,
   contextRefreshMs: 20_000,
 } as const
 
-/** Temporary: only show Gemma-generated comments (no rule-based fallbacks). */
+/** Temporary: only show Gemma-generated comments (no rule-based ambient fallbacks). */
 export const FEATURES = {
   gemmaOnlyComments: true,
-  /** Mouse-cursor reactions (shake / fast sweep) flow even in Gemma-only mode. */
-  mouseReactions: true,
+  /**
+   * Operation reactions (scroll / idle / mouse / etc.) flow even in Gemma-only mode.
+   * Tagged as source: 'interaction' so they are not filtered out.
+   */
+  operationReactions: true,
 } as const
 
 export const STORAGE_KEYS = {

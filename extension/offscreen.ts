@@ -229,7 +229,7 @@ async function generate(prompt: string): Promise<string> {
   const response = await conv.sendMessage(prompt)
   const text = messageText(response.content).trim()
   if (!text) {
-    console.warn('Murmur offscreen: empty model output', JSON.stringify(response).slice(0, 300))
+    console.warn('GemMurmur offscreen: empty model output', JSON.stringify(response).slice(0, 300))
   }
   return text
 }
@@ -289,7 +289,7 @@ chrome.runtime.onMessage.addListener((message: MurmurMessage, _sender, sendRespo
   void run()
     .then(sendResponse)
     .catch((error) => {
-      console.error('Murmur offscreen message error:', message.type, error)
+      console.error('GemMurmur offscreen message error:', message.type, error)
       sendResponse({
         ok: false,
         error: error instanceof Error ? error.message : String(error),
@@ -298,4 +298,4 @@ chrome.runtime.onMessage.addListener((message: MurmurMessage, _sender, sendRespo
   return true
 })
 
-console.info('Murmur offscreen ready')
+console.info('GemMurmur offscreen ready')

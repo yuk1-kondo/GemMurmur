@@ -2,7 +2,7 @@ import { QUEUE, INTERACTION } from '../constants'
 import { createId } from '../id'
 import type { CommentDraft, ResolvedLanguage } from '../types'
 import { normalizeCommentKey } from '../text-dedup'
-import { pickRuleText, pickSlangBatch, type RulePoolKey } from './pools'
+import { pickRuleText, pickSlangBatch, pickSlangText, type RulePoolKey } from './pools'
 
 export { createContextualFallbackBatch } from './contextual-fallback'
 
@@ -57,7 +57,7 @@ export function createRuleComment(
 }
 
 /**
- * Build a mouse-cursor reaction comment. Uses the same text pools/dedup as
+ * Build a mouse-cursor / operation reaction comment. Uses the same text pools/dedup as
  * rule comments but is tagged `source: 'interaction'` so it is allowed through
  * even while Gemma-only mode suppresses other rule-based comments.
  */
@@ -73,6 +73,48 @@ export function createInteractionComment(
     emotion: 'amused',
     emphasis: Math.max(base.emphasis, 0.55),
   }
+}
+
+/** One random net-slang line (fast-scroll / crowd energy). */
+export function createSlangComment(language: ResolvedLanguage): CommentDraft {
+  const text = pickSlangText(language, recentSet())
+  rememberText(text)
+  const now = Date.now()
+  return {
+    id: createId('slang'),
+    text,
+    category: 'crowd',
+    emotion: 'amused',
+    importance: 0.7 + Math.random() * 0.25,
+    emphasis: 0.6 + Math.random() * 0.35,
+    language,
+    source: 'interaction',
+    createdAt: now,
+    expiresAt: now + QUEUE.ttlMs,
+  }
+}
+
+/** "ざわ…" murmurs while Gemma is thinking — always scroll across the screen. */
+export function createThinkingMurmurs(
+  language: ResolvedLanguage,
+  lines: readonly string[],
+  count = 2,
+): CommentDraft[] {
+  const now = Date.now()
+  const picks = [...lines].sort(() => Math.random() - 0.5).slice(0, Math.max(1, count))
+  return picks.map((text) => ({
+    id: createId('zawa'),
+    text,
+    category: 'crowd',
+    emotion: 'curious',
+    importance: 0.45 + Math.random() * 0.2,
+    emphasis: 0.35 + Math.random() * 0.3,
+    language,
+    source: 'interaction' as const,
+    createdAt: now,
+    expiresAt: now + QUEUE.ttlMs,
+    preferredPlacement: 'scroll' as const,
+  }))
 }
 
 export function createAmbientBatch(language: ResolvedLanguage, count: number): CommentDraft[] {

@@ -79,7 +79,7 @@ function bootOnce(): Promise<void> {
       }, 0)
     })().catch((error) => {
       bootPromise = null
-      console.error('Murmur boot failed:', error)
+      console.error('GemMurmur boot failed:', error)
       throw error
     })
   }
@@ -145,7 +145,7 @@ chrome.runtime.onMessage.addListener((message: MurmurMessage, _sender, sendRespo
       if (!app.ready) await bootOnce()
       return await handleMessage(message, app, generationDeps)
     } catch (error) {
-      console.error('Murmur SW message error:', message.type, error)
+      console.error('GemMurmur SW message error:', message.type, error)
       return {
         ok: false,
         error: error instanceof Error ? error.message : String(error),

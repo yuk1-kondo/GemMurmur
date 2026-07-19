@@ -9,12 +9,12 @@ const icons = {
 
 export default defineManifest({
   manifest_version: 3,
-  name: 'Murmur',
+  name: 'GemMurmur',
   version: pkg.version,
-  description: 'Every page has an audience. Local Gemma-powered live comments.',
+  description: 'Every page has an audience. Local Gemma-powered live comments (GemMurmur).',
   icons,
   action: {
-    default_title: 'Murmur',
+    default_title: 'GemMurmur',
     default_popup: 'popup.html',
     default_icon: icons,
   },

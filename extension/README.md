@@ -1,4 +1,4 @@
-# Murmur Extension
+# GemMurmur Extension
 
 ## Build
 

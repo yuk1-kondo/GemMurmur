@@ -50,7 +50,7 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-console.log('OK: Murmur 拡張は読み込み可能な状態です')
+console.log('OK: GemMurmur 拡張は読み込み可能な状態です')
 console.log(`Version: ${manifest.version}`)
 console.log('')
 console.log('Chrome で次のフォルダ「だけ」を読み込んでください:')

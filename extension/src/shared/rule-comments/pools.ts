@@ -412,37 +412,62 @@ const POOLS: Record<ResolvedLanguage, Pool> = {
   'zh-Hant': zhHant,
 }
 
-/** High-energy net-slang used for buzz mode floods (nico-douga flavored). */
+/** High-energy net-slang used for buzz / fast-scroll reactions (nico-douga flavored). */
 const SLANG: Record<ResolvedLanguage, string[]> = {
   ja: [
+    'うぽつ',
+    'うｐ乙',
+    'GJ',
+    '88888888',
+    '初見',
+    '巡回済み',
+    'マイリス余裕でした',
+    '神',
+    '神動画',
+    '神曲',
+    '鳥肌',
+    'もっと評価されるべき',
+    'なぜ伸びない',
+    '埋もれるには惜しい',
+    'キターーー！！',
+    'ｷﾀ━━━━(ﾟ∀ﾟ)━━━━!!',
+    'ざわ…',
+    'wwwwwww',
     'www',
-    'ｗｗｗ',
-    'wwwwww',
     '草',
     '大草原',
-    'ｷﾀ━━━━(ﾟ∀ﾟ)━━━━!!',
-    'ｷﾀ━(ﾟ∀ﾟ)━!',
-    'ｷﾀｺﾚ',
-    'うぽつ',
-    '＼(^o^)／',
-    '神回',
-    'てえてえ',
-    'すこ',
-    'わかるwww',
-    'おおおおお',
-    '888888',
-    '語彙力',
-    '尊い',
-    '沸いた',
-    '優勝',
-    'これはひどいwww',
-    'ﾜﾛﾀ',
-    '∩(´∀｀)∩',
-    '(´・ω・｀)',
-    'なにこれ草',
-    'ｷﾀ━━━!',
-    'ファッ!?',
-    'すごE',
+    '吹いた',
+    '腹筋崩壊',
+    '腹筋返せ',
+    '盛大に吹いた',
+    'コーヒー返せ',
+    '飯返せ',
+    '作業用BGM',
+    '作業妨害用BGM',
+    '中毒性',
+    'ループ余裕',
+    '一時停止推奨',
+    '音量注意',
+    'ヘッドホン推奨',
+    '本編開始',
+    '才能の無駄遣い',
+    '発想の勝利',
+    'シンクロ率400%',
+    '完全一致',
+    '違和感仕事しろ',
+    '違和感どこ行った',
+    'なんだこれ',
+    'どうしてこうなった',
+    'カオス',
+    'シュール',
+    '解せぬ',
+    '誰得',
+    '俺得',
+    'お前らｗ',
+    'お前ら結婚しろ',
+    '運営仕事しろ',
+    'ニコニコできる動画',
+    '伝説入り',
   ],
   en: [
     'LMAOOO',
@@ -467,6 +492,8 @@ const SLANG: Record<ResolvedLanguage, string[]> = {
     '8888',
     'yooo',
     'ratio',
+    'speedrun scroll',
+    'too fast lol',
   ],
   'zh-Hans': [
     '哈哈哈哈',
@@ -489,6 +516,8 @@ const SLANG: Record<ResolvedLanguage, string[]> = {
     '名场面',
     '破防了',
     '梦幻联动',
+    '滑太快了www',
+    '倍速党',
   ],
   'zh-Hant': [
     '哈哈哈哈',
@@ -508,6 +537,8 @@ const SLANG: Record<ResolvedLanguage, string[]> = {
     '衝衝衝',
     '有內味了',
     '神',
+    '滑太快了www',
+    '倍速黨',
   ],
 }
 
@@ -519,6 +550,18 @@ export function pickSlangBatch(language: ResolvedLanguage, count: number): strin
     ;[pool[i], pool[j]] = [pool[j], pool[i]]
   }
   return pool.slice(0, count)
+}
+
+/** One slang line, preferring texts not in `recent`. */
+export function pickSlangText(language: ResolvedLanguage, recent: Set<string> = new Set()): string {
+  const pool = SLANG[language]
+  const available = pool.filter((text) => !recent.has(normalizeCommentKey(text)))
+  const choices = available.length > 0 ? available : pool
+  return choices[Math.floor(Math.random() * choices.length)] ?? 'www'
+}
+
+export function slangPoolSize(language: ResolvedLanguage): number {
+  return SLANG[language].length
 }
 
 export function pickRuleText(

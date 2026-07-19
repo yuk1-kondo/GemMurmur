@@ -96,7 +96,7 @@ async function runGemmaGenerate(
   let raw = await tryGenerate(buildCommentPrompt(context, batch, language, avoidRecent))
   let parsed = parseGeneratedComments(raw ?? '', language, context)
   if (parsed.length > 0) {
-    console.info(`Murmur: Gemma inference ${Math.round(performance.now() - started)}ms`)
+    console.info(`GemMurmur: Gemma inference ${Math.round(performance.now() - started)}ms`)
     return parsed
   }
 
@@ -104,10 +104,10 @@ async function runGemmaGenerate(
     raw = await tryGenerate(buildCommentMinimalPrompt(context, batch, language))
     parsed = parseGeneratedComments(raw ?? '', language, context)
     if (parsed.length > 0) {
-      console.info(`Murmur: Gemma minimal inference ${Math.round(performance.now() - started)}ms`)
+      console.info(`GemMurmur: Gemma minimal inference ${Math.round(performance.now() - started)}ms`)
     }
   } catch (retryError) {
-    console.warn('Murmur: Gemma minimal retry failed:', retryError)
+    console.warn('GemMurmur: Gemma minimal retry failed:', retryError)
   }
   return parsed
 }
@@ -159,7 +159,7 @@ export async function generateForContext(
     if (parsed.length === 0) {
       gemmaFailStreak += 1
       gemmaBackoffUntil = Date.now() + Math.min(60_000, 8_000 * gemmaFailStreak)
-      console.warn('Murmur: Gemma produced no usable comments')
+      console.warn('GemMurmur: Gemma produced no usable comments')
       return
     }
 
@@ -176,7 +176,7 @@ export async function generateForContext(
     if (/busy|not ready|webgpu/i.test(message)) {
       await deps.onFatalModelError(message)
     } else {
-      console.warn('Murmur: Gemma generation failed:', message)
+      console.warn('GemMurmur: Gemma generation failed:', message)
     }
   } finally {
     generating = false

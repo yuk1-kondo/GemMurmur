@@ -148,7 +148,7 @@ function patchSettings(patch: Partial<MurmurSettings>): void {
       }
     })
     .catch((error) => {
-      console.error('Murmur popup: settings write failed', error)
+      console.error('GemMurmur popup: settings write failed', error)
       showInitError('設定を保存できませんでした。拡張機能を更新してからもう一度試してください。')
     })
 }
@@ -176,7 +176,7 @@ async function syncFromStorage(): Promise<void> {
       render()
     }
   } catch (error) {
-    console.warn('Murmur popup: storage read failed, using defaults', error)
+    console.warn('GemMurmur popup: storage read failed, using defaults', error)
   }
 }
 
@@ -209,7 +209,7 @@ function applyStorageChanges(changes: Record<string, chrome.storage.StorageChang
 
 function sendBackgroundCommand(message: MurmurMessage): void {
   void chrome.runtime.sendMessage(message).catch((error) => {
-    console.warn('Murmur popup: background command failed', message.type, error)
+    console.warn('GemMurmur popup: background command failed', message.type, error)
   })
 }
 
@@ -403,6 +403,6 @@ try {
   initPopup()
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error)
-  console.error('Murmur popup init failed:', error)
+  console.error('GemMurmur popup init failed:', error)
   showInitError(`設定画面の初期化に失敗しました: ${message}`)
 }
