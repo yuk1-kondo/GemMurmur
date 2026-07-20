@@ -98,6 +98,34 @@ function pushUnique(out: CommentDraft[], draft: CommentDraft): void {
   out.push(draft)
 }
 
+/** Soft-question endings that small models spam on gadget/tech pages. */
+function softQuestionEnding(text: string): string | null {
+  const t = text.trim()
+  if (/なの[？?]?$/.test(t)) return 'nano'
+  if (/なんですか[？?]?$/.test(t)) return 'nanodesuka'
+  if (/でしょうか[？?]?$/.test(t)) return 'deshouka'
+  if (/ですか[？?]?$/.test(t)) return 'desuka'
+  return null
+}
+
+/**
+ * Keep at most one comment per soft-question ending family in a batch,
+ * so 「〜なの？」 does not dominate gadget articles.
+ */
+function diversifyEndings(comments: CommentDraft[]): CommentDraft[] {
+  const seen = new Set<string>()
+  const out: CommentDraft[] = []
+  for (const comment of comments) {
+    const ending = softQuestionEnding(comment.text)
+    if (ending) {
+      if (seen.has(ending)) continue
+      seen.add(ending)
+    }
+    out.push(comment)
+  }
+  return out
+}
+
 function draftFromRow(
   row: Record<string, unknown>,
   language: ResolvedLanguage,
@@ -187,7 +215,7 @@ export function parseGeneratedComments(
       const draft = draftFromRow(item as Record<string, unknown>, language, now, context)
       if (draft) pushUnique(out, draft)
     }
-    if (out.length > 0) return out.slice(0, QUEUE.batchSize)
+    if (out.length > 0) return diversifyEndings(out).slice(0, QUEUE.batchSize)
   }
 
   const ndjson: CommentDraft[] = []
@@ -202,7 +230,7 @@ export function parseGeneratedComments(
       // ignore malformed line
     }
   }
-  if (ndjson.length > 0) return ndjson.slice(0, QUEUE.batchSize)
+  if (ndjson.length > 0) return diversifyEndings(ndjson).slice(0, QUEUE.batchSize)
 
-  return extractFromPlainLines(trimmed, language, context)
+  return diversifyEndings(extractFromPlainLines(trimmed, language, context))
 }
