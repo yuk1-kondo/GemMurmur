@@ -21,7 +21,8 @@ const readme = [
   '   ※ manifest.json ファイルではなく、フォルダを選ぶこと',
   '   ※ extension 直下（src がある場所）は選ばないこと',
   '',
-  '互換: extension/chrome-extension も同じ内容です（ビルド後に自動リンク）',
+  'GitHubからリポジトリ全体をダウンロードした場合は、',
+  'GemMurmur-main/extension/dist フォルダを選択してください。',
 ].join('\n')
 
 writeFileSync(resolve(outDir, 'README-このフォルダを読み込む.txt'), readme, 'utf8')

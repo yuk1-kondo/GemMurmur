@@ -1,21 +1,61 @@
 # GemMurmur
 
-ローカル LLM（Gemma）でページにライブコメントを流す Chrome 拡張機能。  
+GemMurmurは、閲覧中のWebページにライブコメントを流すChrome拡張機能です。ページ内容を端末上のローカルLLM（Gemma）で読み取り、ニコニコ動画の弾幕のような短いリアクションを生成します。
+
 **Gem**ma + **Murmur**（ざわめき）= **GemMurmur**。
 
-設計仕様: [Murmur_Product_Spec_v0.1.md](Murmur_Product_Spec_v0.1.md)
+## 主な機能
 
-## すぐ使う（ビルド不要）
+- ページ内容に沿ったコメントを右から左へ表示
+- スクロール、連続クリック、タブ復帰などの操作に反応
+- 長時間利用時にコメント密度が上がるバズモード
+- 日本語、英語、中国語（簡体字・繁体字）に対応
+- ページ単位・サイト単位の停止、一時停止
+- ログイン、決済、メールなどのプライベートページでは自動停止
+- ページ本文と操作履歴を外部APIへ送信しないローカル推論
 
-リポジトリを clone / ZIP ダウンロードしたあと、**`extension/dist`** を Chrome に読み込んでください。
+## 動作環境
 
-1. `chrome://extensions` を開く
-2. デベロッパーモード ON
-3. 「パッケージ化されていない拡張機能を読み込む」→ `extension/dist` を選択
+- デスクトップ版 Google Chrome または Chromium版 Microsoft Edge
+- WebGPU対応環境
+- 初回モデル取得用のインターネット接続
+- 約2GBのモデルを保存できる空き容量
 
-※ `extension` 直下や `manifest.json` ファイルは選ばないでください。
+モバイル版Chromeには対応していません。
 
-## ソースからビルドする場合
+## ダウンロードして使う
+
+ビルド済みファイルをリポジトリに同梱しているため、Node.jsやビルド作業は不要です。
+
+1. GitHubのリポジトリ画面で「Code」→「Download ZIP」を選択する
+2. ダウンロードしたZIPファイルを展開する
+3. Chromeで `chrome://extensions` を開く
+4. 右上の「デベロッパーモード」をONにする
+5. 「パッケージ化されていない拡張機能を読み込む」をクリックする
+6. 展開したリポジトリ内の **`extension/dist` フォルダ**を選択する
+
+`GemMurmur-main`、`extension`、または `manifest.json` ファイル単体ではなく、必ず `extension/dist` フォルダを選択してください。
+
+## 初回起動
+
+1. ツールバーのGemMurmurアイコンを開く
+2. 「モデル読み込み」を押す
+3. モデルのダウンロードと読み込みが完了するまで待つ
+4. 状態が `ready` になったら、通常のWebページを開く
+
+モデルは端末内にキャッシュされます。外部通信はモデルファイルの取得に使用し、閲覧ページの本文は送信しません。
+
+## 操作方法
+
+拡張機能のポップアップから、次の操作ができます。
+
+- GemMurmur全体のON／OFF
+- コメントの一時停止・再開
+- 現在のページまたはサイトで停止
+- コメント言語の変更
+- ローカルモデルの読み込み、再読み込み、削除
+
+## 開発者向けビルド
 
 ```bash
 cd extension
@@ -23,29 +63,30 @@ npm install
 npm run build
 ```
 
-```bash
-cd extension
-npm run open-extension
-```
-
-Mac: `extension/load-in-chrome.command` をダブルクリックでも案内できます。
-
-## ディレクトリ構成
-
-```
-Murmur/                           # リポジトリフォルダ名（履歴互換）
-├── Murmur_Product_Spec_v0.1.md   # 設計仕様
-├── README.md
-└── extension/                    # 拡張機能のソース（表示名: GemMurmur）
-    ├── src/                      # TypeScript ソース
-    ├── dist/                     # ビルド成果物（Chrome に読み込む）
-    ├── docs/                     # テストチェックリスト等
-    └── scripts/                  # ビルド補助スクリプト
-```
-
-## CI
+品質チェックをまとめて実行する場合：
 
 ```bash
 cd extension
 npm run ci
 ```
+
+ビルド後は `extension/dist` が更新されます。配布時はこのフォルダもリポジトリへコミットしてください。
+
+## ディレクトリ構成
+
+```text
+GemMurmur-main/
+├── README.md
+└── extension/
+    ├── dist/       # Chromeへ読み込むビルド済み拡張機能
+    ├── src/        # TypeScriptソース
+    ├── docs/       # 実機テスト用チェックリスト
+    └── scripts/    # ビルド・検証用スクリプト
+```
+
+## 注意事項
+
+- Chromeウェブストア版ではないため、デベロッパーモードで読み込む必要があります。
+- 初回モデル取得には時間がかかる場合があります。
+- Google Docs、PDF、動画プレイヤー内など、一部ページは最適化されていません。
+- WebGPUが利用できない環境ではローカルモデルを実行できません。
