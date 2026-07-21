@@ -1,4 +1,4 @@
-dist/
+# dist/ は GitHub から DL してすぐ読めるようコミットする
 chrome-extension
 node_modules/
 public/wasm/

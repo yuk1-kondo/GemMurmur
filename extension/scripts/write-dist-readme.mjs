@@ -22,8 +22,6 @@ const readme = [
   '   ※ extension 直下（src がある場所）は選ばないこと',
   '',
   '互換: extension/chrome-extension も同じ内容です（ビルド後に自動リンク）',
-  '',
-  `フルパス: ${outDir}`,
 ].join('\n')
 
 writeFileSync(resolve(outDir, 'README-このフォルダを読み込む.txt'), readme, 'utf8')

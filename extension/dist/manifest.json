@@ -1,0 +1,75 @@
+{
+  "manifest_version": 3,
+  "name": "GemMurmur",
+  "version": "0.10.2",
+  "description": "Every page has an audience. Local Gemma-powered live comments (GemMurmur).",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "GemMurmur",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "permissions": [
+    "storage",
+    "offscreen",
+    "tabs",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://huggingface.co/*",
+    "https://*.huggingface.co/*",
+    "https://*.hf.co/*"
+  ],
+  "content_scripts": [
+    {
+      "js": [
+        "assets/main.ts-loader-B-wlDdXD.js"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "offscreen.html",
+        "wasm/*"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "resources": [
+        "assets/constants-CPMpig9M.js",
+        "assets/safety-D0AnSegT.js",
+        "assets/runtime-storage-Bf7Ly_8G.js",
+        "assets/main.ts-CVjPHe3v.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}

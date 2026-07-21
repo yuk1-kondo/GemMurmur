@@ -5,21 +5,23 @@
 
 設計仕様: [Murmur_Product_Spec_v0.1.md](Murmur_Product_Spec_v0.1.md)
 
-## ビルド
+## すぐ使う（ビルド不要）
+
+リポジトリを clone / ZIP ダウンロードしたあと、**`extension/dist`** を Chrome に読み込んでください。
+
+1. `chrome://extensions` を開く
+2. デベロッパーモード ON
+3. 「パッケージ化されていない拡張機能を読み込む」→ `extension/dist` を選択
+
+※ `extension` 直下や `manifest.json` ファイルは選ばないでください。
+
+## ソースからビルドする場合
 
 ```bash
 cd extension
 npm install
 npm run build
 ```
-
-## Chrome への読み込み
-
-**`extension/dist`** フォルダを読み込んでください（`extension` 直下や `manifest.json` ファイルではありません）。
-
-1. `chrome://extensions` を開く
-2. デベロッパーモード ON
-3. 「パッケージ化されていない拡張機能を読み込む」→ `extension/dist` を選択
 
 ```bash
 cd extension

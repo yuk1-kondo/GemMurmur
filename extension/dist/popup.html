@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GemMurmur</title>
+    <script type="module" crossorigin src="./assets/popup.html-CuRwCwxK.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
+    <link rel="modulepreload" crossorigin href="./assets/constants-CPMpig9M.js">
+    <link rel="modulepreload" crossorigin href="./assets/runtime-storage-Bf7Ly_8G.js">
+    <link rel="stylesheet" crossorigin href="./assets/popup-CUdPxqXp.css">
+  </head>
+  <body>
+    <main class="panel">
+      <p id="init-error" class="init-error" hidden></p>
+      <header>
+        <div class="header-row">
+          <h1>GemMurmur</h1>
+          <span id="app-version" class="version-badge" aria-label="バージョン">v—</span>
+        </div>
+        <p class="tagline">Every page has an audience.</p>
+      </header>
+
+      <section class="row">
+        <label class="switch">
+          <input id="enabled" type="checkbox" />
+          <span>ON / OFF</span>
+        </label>
+        <button id="pause" type="button">一時停止</button>
+      </section>
+
+      <section class="row">
+        <button id="stop-page" type="button">このページでは停止</button>
+        <button id="stop-site" type="button">このサイトでは停止</button>
+      </section>
+
+      <section class="row">
+        <button id="resume" type="button">再開</button>
+      </section>
+
+      <section>
+        <label for="language">コメント言語</label>
+        <select id="language">
+          <option value="auto">自動</option>
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+          <option value="zh-Hans">简体中文</option>
+          <option value="zh-Hant">繁體中文</option>
+        </select>
+      </section>
+
+      <section class="model">
+        <h2>ローカルモデル</h2>
+        <p id="model-status">状態: —</p>
+        <p id="model-progress" class="muted"></p>
+        <div class="row">
+          <button id="model-load" type="button">モデル読み込み</button>
+          <button id="model-reload" type="button">再読み込み</button>
+          <button id="model-delete" type="button">削除</button>
+        </div>
+        <button id="model-cancel" type="button" class="ghost">ダウンロード取消</button>
+      </section>
+
+      <section class="privacy">
+        <p>Runs locally with Gemma</p>
+        <p>Page content stays on your device.</p>
+      </section>
+
+      <details class="demo">
+        <summary>Developer demo</summary>
+        <label class="switch">
+          <input id="demo-mode" type="checkbox" />
+          <span>Demo mode</span>
+        </label>
+        <div class="row wrap">
+          <button data-demo="seed_first_comment" type="button">初回コメント</button>
+          <button data-demo="force_fast_scroll" type="button">高速スクロール</button>
+          <button data-demo="force_idle" type="button">停止反応</button>
+          <button data-demo="force_buzz" type="button">バズ</button>
+          <button data-demo="force_error_webgpu" type="button">WebGPUエラー</button>
+          <button data-demo="force_error_model" type="button">モデルエラー</button>
+          <button data-demo="force_error_memory" type="button">メモリエラー</button>
+        </div>
+      </details>
+    </main>
+  </body>
+</html>
