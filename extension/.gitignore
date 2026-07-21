@@ -1,7 +1,7 @@
 # dist/ は GitHub から DL してすぐ読めるようコミットする
 chrome-extension
 node_modules/
-public/wasm/
-icons/
+/public/wasm/
+/icons/
 .DS_Store
 *.local
