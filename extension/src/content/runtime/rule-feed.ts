@@ -3,9 +3,9 @@ import { recordMetric } from '@/shared/metrics'
 import {
   createAmbientBatch,
   createBootBatch,
+  createBuzzFloodBatch,
   createInteractionComment,
   createPendingModelBatch,
-  createRuleComment,
   createSlangComment,
   createThinkingMurmurs,
 } from '@/shared/rule-comments/factory'
@@ -62,7 +62,10 @@ function presentNow(comment: CommentDraft): void {
 /** Show Gemma-thinking as scrolling murmurs instead of a corner badge. */
 export function showThinkingMurmurs(language: ResolvedLanguage): void {
   if (!runtime.allowed || !runtime.buffer) return
-  const lines = USER_MESSAGES.gemmaThinkingLines[language] ?? USER_MESSAGES.gemmaThinkingLines.ja
+  const lines =
+    USER_MESSAGES.gemmaThinkingLines[language] ??
+    USER_MESSAGES.gemmaThinkingLines.en ??
+    ['murmur…']
   const batch = createThinkingMurmurs(language, lines, 2 + (Math.random() < 0.4 ? 1 : 0))
   // Push in reverse so the first murmur is presented first.
   for (let i = batch.length - 1; i >= 0; i -= 1) {
@@ -87,9 +90,12 @@ export function refillAmbientComments(language: ResolvedLanguage, modelPending: 
 }
 
 export function onDensityChange(density: DensityMode, language: ResolvedLanguage): void {
-  if (FEATURES.gemmaOnlyComments) return
   if (density !== 'buzz') return
-  const batch = Array.from({ length: 3 }, () => createRuleComment(language, 'buzz'))
-  pushToBuffer(batch)
+  // Buzz begins with a page-independent crowd layer, even if Gemma is still loading.
+  pushToBuffer(createBuzzFloodBatch(language, Math.floor(DISPLAY.ruleBootBatch * 18)))
 }
 
+/** Keep the full-screen festival filled between on-device generations. */
+export function refillBuzzComments(language: ResolvedLanguage, count: number): void {
+  pushToBuffer(createBuzzFloodBatch(language, count))
+}

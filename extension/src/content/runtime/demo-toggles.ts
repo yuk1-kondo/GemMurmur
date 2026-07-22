@@ -1,13 +1,15 @@
 import type { DemoTrigger } from '@/shared/messages'
-import { QUEUE, STORAGE_KEYS } from '@/shared/constants'
+import { BUZZ, GENERATION, QUEUE, STORAGE_KEYS } from '@/shared/constants'
 import { createBuzzFloodBatch, createInteractionComment } from '@/shared/rule-comments/factory'
-import { USER_MESSAGES } from '@/shared/user-messages'
+import { runtimeMessage } from '@/shared/user-messages'
 import { requestGemmaIfReady } from './gemma-client'
 import { armSpawnLoop } from './spawn-loop'
 import { runtime } from './state'
 
 const activeDemos = new Set<DemoTrigger>()
 const timers = new Map<DemoTrigger, number>()
+let buzzEndTimer: number | null = null
+let lastBuzzGemmaRequestAt = 0
 
 async function persistDemoState(): Promise<void> {
   const map: Record<string, boolean> = {}
@@ -23,6 +25,11 @@ function clearKindTimer(kind: DemoTrigger): void {
   const id = timers.get(kind)
   if (id != null) window.clearInterval(id)
   timers.delete(kind)
+}
+
+function clearBuzzEndTimer(): void {
+  if (buzzEndTimer != null) window.clearTimeout(buzzEndTimer)
+  buzzEndTimer = null
 }
 
 function clearOnScreenComments(): void {
@@ -43,24 +50,56 @@ function floodBuzzBatch(count = Math.min(10, QUEUE.maxBuffer)): void {
   runtime.buffer.push(createBuzzFloodBatch(runtime.language, count))
 }
 
+/**
+ * A direct visual wave keeps the festival alive even when a page is busy and
+ * the normal queue momentarily falls behind. It deliberately bypasses the
+ * queue, while the queue still supplies the continuous right-to-left stream.
+ */
+function launchBuzzWave(count: number): void {
+  if (!activeDemos.has('force_buzz') || !runtime.renderer) return
+  for (const comment of createBuzzFloodBatch(runtime.language, count)) {
+    runtime.renderer.enqueue(comment)
+  }
+}
+
 function startBuzz(): void {
   setBuzzDensity(true)
   floodBuzzBatch(QUEUE.maxBuffer)
-  requestGemmaIfReady()
+  launchBuzzWave(38)
+  requestGemmaIfReady(GENERATION.buzzBatchCap)
+  lastBuzzGemmaRequestAt = Date.now()
   clearKindTimer('force_buzz')
   timers.set(
     'force_buzz',
     window.setInterval(() => {
       if (!activeDemos.has('force_buzz') || !runtime.buffer) return
-      if (runtime.buffer.size() < QUEUE.minBuffer) floodBuzzBatch(8)
-      else floodBuzzBatch(3)
-      requestGemmaIfReady()
-    }, 1_400),
+      if (runtime.buffer.size() < Math.floor(QUEUE.maxBuffer * 0.7)) {
+        floodBuzzBatch(Math.floor(QUEUE.maxBuffer * 0.3))
+      }
+      // Six to ten extra comments every third of a second make the overlay
+      // visibly relentless for the entire session, not only at the beginning.
+      launchBuzzWave(6 + Math.floor(Math.random() * 5))
+      if (Date.now() - lastBuzzGemmaRequestAt >= GENERATION.buzzRefillMinGapMs) {
+        lastBuzzGemmaRequestAt = Date.now()
+        requestGemmaIfReady(GENERATION.buzzBatchCap)
+      }
+    }, 320),
   )
+  clearBuzzEndTimer()
+  buzzEndTimer = window.setTimeout(() => {
+    // The public Buzz preview shares the natural mode's five-minute duration.
+    activeDemos.delete('force_buzz')
+    stopBuzz()
+    void chrome.storage.local.set({
+      [STORAGE_KEYS.settings]: { ...(runtime.settings ?? {}), buzzMode: false },
+    })
+    void persistDemoState()
+  }, BUZZ.durationMs)
 }
 
 function stopBuzz(): void {
   clearKindTimer('force_buzz')
+  clearBuzzEndTimer()
   setBuzzDensity(false)
   clearOnScreenComments()
 }
@@ -123,10 +162,10 @@ function startErrorDemo(kind: DemoTrigger): void {
   }
   const message =
     kind === 'force_error_webgpu'
-      ? USER_MESSAGES.webgpuUnsupported
+      ? runtimeMessage(runtime.language, 'webgpuUnsupported')
       : kind === 'force_error_model'
-        ? USER_MESSAGES.modelLoadFailed
-        : USER_MESSAGES.memoryError
+        ? runtimeMessage(runtime.language, 'modelLoadFailed')
+        : runtimeMessage(runtime.language, 'memoryError')
   runtime.renderer.showStatus(message, 'error', 'center', { persist: true })
 }
 
@@ -191,5 +230,6 @@ export function isDemoBuzzActive(): boolean {
 export function clearAllDemoToggles(): void {
   for (const kind of [...timers.keys()]) clearKindTimer(kind)
   activeDemos.clear()
+  clearBuzzEndTimer()
   void persistDemoState()
 }

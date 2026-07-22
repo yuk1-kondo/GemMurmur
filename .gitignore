@@ -1,2 +1,4 @@
 .DS_Store
-.chrome-smoke-profile/
+extension/.DS_Store
+extension/node_modules/
+promo/output/.work/

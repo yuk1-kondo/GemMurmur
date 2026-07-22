@@ -1,0 +1,6 @@
+Every page deserves an audience.
+GemMurmur is a Chrome extension that streams live comments directly over the web.
+In normal mode, reactions glide from right to left.
+Stay on a page, and Buzz mode turns the whole screen into a colourful crowd.
+With local Gemma and multilingual comments, every voice can join.
+GemMurmur. Every page has an audience.

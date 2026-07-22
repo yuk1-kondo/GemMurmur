@@ -3,14 +3,20 @@ import { resolveLanguage } from '@/shared/language'
 import { pageKeyFromUrl } from '@/shared/page-key'
 import { CommentTextLedger } from '@/shared/text-dedup'
 import { USER_MESSAGES } from '@/shared/user-messages'
-import type { CommentDraft, ModelState, MurmurSettings, PageContext, ResolvedLanguage } from '@/shared/types'
+import type { BuzzState, CommentDraft, ModelState, MurmurSettings, PageContext, ResolvedLanguage } from '@/shared/types'
 import { broadcastToPage } from '../broadcast'
 import { sendToOffscreen } from '../offscreen-rpc'
 import { parseGeneratedComments } from '../parse-comments'
-import { buildCommentPrompt, buildCommentMinimalPrompt } from '../prompt'
+import {
+  buildBuzzMinimalPrompt,
+  buildBuzzPrompt,
+  buildCommentMinimalPrompt,
+  buildCommentPrompt,
+} from '../prompt'
 
 export interface GenerationDeps {
   getSettings: () => MurmurSettings
+  getBuzz: () => BuzzState
   getModel: () => ModelState
   ensureModelRuntime: () => Promise<boolean>
   onFatalModelError: (message: string) => Promise<void>
@@ -42,8 +48,8 @@ export function filterUniqueComments(comments: CommentDraft[], pageKey: string):
   const ledger = ledgerForPage(pageKey)
   const unique: CommentDraft[] = []
   for (const comment of comments) {
-    if (ledger.has(comment.text)) continue
-    ledger.add(comment.text)
+    if (!comment.isBuzz && ledger.has(comment.text)) continue
+    if (!comment.isBuzz) ledger.add(comment.text)
     unique.push(comment)
   }
   return unique
@@ -77,8 +83,9 @@ async function runGemmaGenerate(
   count: number,
   language: ResolvedLanguage,
   pageKey: string,
+  isBuzz: boolean,
 ): Promise<CommentDraft[]> {
-  const batch = Math.min(count, GENERATION.gemmaBatchCap)
+  const batch = Math.min(count, isBuzz ? GENERATION.buzzBatchCap : GENERATION.gemmaBatchCap)
   const requestId = `gen_${Date.now()}`
   const avoidRecent = ledgerForPage(pageKey).recentTexts(12)
   const started = performance.now()
@@ -93,16 +100,42 @@ async function runGemmaGenerate(
     return result?.text ?? null
   }
 
-  let raw = await tryGenerate(buildCommentPrompt(context, batch, language, avoidRecent))
-  let parsed = parseGeneratedComments(raw ?? '', language, context)
+  let raw = await tryGenerate(
+    isBuzz
+      ? buildBuzzPrompt(batch, language)
+      : buildCommentPrompt(context, batch, language, avoidRecent),
+  )
+  let parsed = parseGeneratedComments(raw ?? '', language, isBuzz ? undefined : context, batch)
+  if (isBuzz) {
+    parsed = parsed.map((comment) => ({
+      ...comment,
+      isBuzz: true,
+      category: 'crowd',
+      emotion: 'amused',
+      emphasis: 0.7 + Math.random() * 0.3,
+    }))
+  }
   if (parsed.length > 0) {
     console.info(`GemMurmur: Gemma inference ${Math.round(performance.now() - started)}ms`)
     return parsed
   }
 
   try {
-    raw = await tryGenerate(buildCommentMinimalPrompt(context, batch, language))
-    parsed = parseGeneratedComments(raw ?? '', language, context)
+    raw = await tryGenerate(
+      isBuzz
+        ? buildBuzzMinimalPrompt(batch, language)
+        : buildCommentMinimalPrompt(context, batch, language),
+    )
+    parsed = parseGeneratedComments(raw ?? '', language, isBuzz ? undefined : context, batch)
+    if (isBuzz) {
+      parsed = parsed.map((comment) => ({
+        ...comment,
+        isBuzz: true,
+        category: 'crowd',
+        emotion: 'amused',
+        emphasis: 0.7 + Math.random() * 0.3,
+      }))
+    }
     if (parsed.length > 0) {
       console.info(`GemMurmur: Gemma minimal inference ${Math.round(performance.now() - started)}ms`)
     }
@@ -128,7 +161,8 @@ export async function generateForContext(
   if (!settings.enabled || settings.paused) return
 
   const language = resolveLanguage(settings.language, context.language)
-  const batch = Math.min(count, QUEUE.batchSize)
+  const isBuzz = settings.buzzMode || deps.getBuzz().density === 'buzz'
+  const batch = Math.min(count, isBuzz ? GENERATION.buzzBatchCap : QUEUE.batchSize)
   const targetPageKey = pageKeyFromUrl(context.url)
 
   if (model.status !== 'ready') {
@@ -152,7 +186,7 @@ export async function generateForContext(
   }
 
   try {
-    const parsed = await runGemmaGenerate(context, batch, language, targetPageKey)
+    const parsed = await runGemmaGenerate(context, batch, language, targetPageKey, isBuzz)
     await broadcastToPage(targetPageKey, { type: 'CLEAR_STATUS' })
     showingThinking = false
 

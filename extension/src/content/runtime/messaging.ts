@@ -2,8 +2,9 @@ import { FEATURES } from '@/shared/constants'
 import type { MurmurMessage } from '@/shared/messages'
 import { pageKeyFromUrl } from '@/shared/page-key'
 import { isStopped } from '@/shared/runtime-guards'
-import { USER_MESSAGES } from '@/shared/user-messages'
+import { runtimeMessage, USER_MESSAGES } from '@/shared/user-messages'
 import { isExtensionContextValid } from './extension-context'
+import { extractPageContext } from '../extract/dom'
 import { requestGemmaIfReady } from './gemma-client'
 import { onDensityChange, showThinkingMurmurs } from './rule-feed'
 import { applyDemoToggle, isDemoBuzzActive } from './demo-toggles'
@@ -12,8 +13,13 @@ import { refreshAmbientLoop, startRuntime, stopRuntime } from './lifecycle'
 import { runtime } from './state'
 
 export function installMessageListener(): void {
-  chrome.runtime.onMessage.addListener((message: MurmurMessage) => {
+  chrome.runtime.onMessage.addListener((message: MurmurMessage, _sender, sendResponse) => {
     if (!isExtensionContextValid()) return
+    if (message.type === 'GET_PAGE_STATUS') {
+      const context = runtime.pageContext ?? extractPageContext()
+      sendResponse({ isPrivate: context.isPrivate })
+      return
+    }
     if (message.type === 'STATE') {
       const wasAllowed = runtime.allowed
       runtime.settings = message.payload.settings
@@ -55,7 +61,10 @@ export function installMessageListener(): void {
         showThinkingMurmurs(runtime.language)
         return
       }
-      runtime.renderer?.showStatus(message.message, message.level, message.placement)
+      const status = message.messageKey
+        ? runtimeMessage(runtime.language, message.messageKey)
+        : message.message
+      if (status) runtime.renderer?.showStatus(status, message.level, message.placement)
       return
     }
 
@@ -69,7 +78,7 @@ export function installMessageListener(): void {
       const wasReady = runtime.modelReady
       runtime.modelReady = message.model.status === 'ready'
       if (message.model.status === 'unsupported') {
-        stopRuntime(USER_MESSAGES.webgpuUnsupported, 'error')
+        stopRuntime(runtimeMessage(runtime.language, 'webgpuUnsupported'), 'error')
         return
       }
       if (runtime.modelReady && !wasReady) {

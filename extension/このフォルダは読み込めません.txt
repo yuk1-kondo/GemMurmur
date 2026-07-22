@@ -7,7 +7,6 @@
 2. 「パッケージ化されていない拡張機能を読み込む」
 3. 次のいずれかのフォルダを選択（フォルダを選ぶ。manifest.json ファイルではない）
    - extension/dist
-   - extension/chrome-extension（ローカルビルド後の dist へのショートカット）
 
 ソースを変更したときは:
 1. ターミナルで extension フォルダに移動

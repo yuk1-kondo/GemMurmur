@@ -2,15 +2,15 @@ import { DISPLAY, FONT_SIZE_PX } from '@/shared/constants'
 import type { AccentColor, CommentCategory, CommentSize, DensityMode } from '@/shared/types'
 
 const ACCENT_HEX: Record<AccentColor, string> = {
-  white: '#ffffff',
-  black: '#111111',
-  red: '#ff3b3b',
-  blue: '#4aa3ff',
-  yellow: '#ffe14a',
-  green: '#5dff8a',
-  purple: '#c58bff',
-  orange: '#ff9a3c',
-  pink: '#ff7ad9',
+  white: '#f8f8f8',
+  black: '#0d0d0d',
+  red: '#ff5a5f',
+  blue: '#5b8cff',
+  yellow: '#f5c451',
+  green: '#10a37f',
+  purple: '#a78bfa',
+  orange: '#fb923c',
+  pink: '#f472b6',
 }
 
 let cachedDarkBg: boolean | null = null
@@ -33,19 +33,28 @@ export function estimateBackgroundIsDark(): boolean {
 }
 
 export function pickColor(draftEmphasis: number, preferDarkText: boolean): AccentColor {
-  if (Math.random() < 0.1 + draftEmphasis * 0.15) {
-    const accents: AccentColor[] = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'pink']
-    return accents[Math.floor(Math.random() * accents.length)]
+  // Normal mode stays legible, with occasional colorful comments to keep the
+  // crowd lively without turning every page into Buzz mode.
+  if (Math.random() < (draftEmphasis > 0.8 ? 0.36 : 0.24)) {
+    const colors: AccentColor[] = ['green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'red']
+    return colors[Math.floor(Math.random() * colors.length)]
   }
   return preferDarkText ? 'black' : 'white'
 }
 
-/** Wilder color mix for slang / crowd reactions. */
-export function pickSlangColor(preferDarkText: boolean): AccentColor {
-  const roll = Math.random()
-  if (roll < 0.3) return preferDarkText ? 'black' : 'white'
-  const accents: AccentColor[] = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'pink']
-  return accents[Math.floor(Math.random() * accents.length)]
+/** Interaction reactions retain the same restrained palette as normal comments. */
+export function pickSlangColor(preferDarkText: boolean, isBuzz = false): AccentColor {
+  if (isBuzz) {
+    const colors: AccentColor[] = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'pink']
+    // A little white/black preserves contrast and makes the color beats pop.
+    if (Math.random() < 0.06) return preferDarkText ? 'black' : 'white'
+    return colors[Math.floor(Math.random() * colors.length)]
+  }
+  if (Math.random() < 0.3) {
+    const colors: AccentColor[] = ['green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'red']
+    return colors[Math.floor(Math.random() * colors.length)]
+  }
+  return preferDarkText ? 'black' : 'white'
 }
 
 export function pickSize(
@@ -72,8 +81,14 @@ export function pickSize(
 }
 
 /** Fully random size for slang comments. */
-export function pickSlangSize(): CommentSize {
+export function pickSlangSize(isBuzz = false): CommentSize {
   const roll = Math.random()
+  if (isBuzz) {
+    if (roll < 0.08) return 'small'
+    if (roll < 0.24) return 'medium'
+    if (roll < 0.62) return 'large'
+    return 'xl'
+  }
   if (roll < 0.2) return 'small'
   if (roll < 0.45) return 'medium'
   if (roll < 0.75) return 'large'
@@ -98,8 +113,14 @@ export function pickPlacement(
  * Random placement for slang: scroll / center / subtitle band (top・bottom).
  * Weighted toward scroll so the stream stays readable.
  */
-export function pickSlangPlacement(): 'scroll' | 'top' | 'bottom' | 'center' {
+export function pickSlangPlacement(isBuzz = false): 'scroll' | 'top' | 'bottom' | 'center' {
   const roll = Math.random()
+  if (isBuzz) {
+    if (roll < 0.78) return 'scroll'
+    if (roll < 0.86) return 'top'
+    if (roll < 0.94) return 'bottom'
+    return 'center'
+  }
   if (roll < 0.5) return 'scroll'
   if (roll < 0.68) return 'top'
   if (roll < 0.86) return 'bottom'
@@ -130,11 +151,11 @@ export function fontSizePx(size: CommentSize, randomScale = true): number {
 export function textShadow(color: AccentColor): string {
   const edge = color === 'black' ? '#ffffff' : '#111111'
   return [
-    `-2px -2px 0 ${edge}`,
-    `2px -2px 0 ${edge}`,
-    `-2px 2px 0 ${edge}`,
-    `2px 2px 0 ${edge}`,
-    `0 0 8px rgba(0,0,0,0.35)`,
+    `-1px -1px 0 ${edge}`,
+    `1px -1px 0 ${edge}`,
+    `-1px 1px 0 ${edge}`,
+    `1px 1px 0 ${edge}`,
+    '0 1px 2px rgb(0 0 0 / 22%)',
   ].join(', ')
 }
 

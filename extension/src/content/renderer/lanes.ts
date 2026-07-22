@@ -25,8 +25,8 @@ export class LaneManager {
     const height = typeof window !== 'undefined' ? window.innerHeight : 900
     // Minimum vertical gap between lane centers (px). Wider gap = less overlap.
     const minGapPx =
-      this.density === 'buzz' ? 30 : this.density === 'busy' ? 40 : 48
-    const usablePx = height * 0.76
+      this.density === 'buzz' ? 18 : this.density === 'busy' ? 40 : 48
+    const usablePx = height * (this.density === 'buzz' ? 0.98 : 0.76)
     const byHeight = Math.max(5, Math.floor(usablePx / minGapPx))
     const cap =
       this.density === 'buzz'
@@ -39,7 +39,7 @@ export class LaneManager {
 
   private collisionSlack(): number {
     // Prefer free lanes; higher slack = less same-lane stacking.
-    if (this.density === 'buzz') return 280
+    if (this.density === 'buzz') return 80
     if (this.density === 'busy') return 900
     return 1_600
   }
@@ -72,7 +72,7 @@ export class LaneManager {
     const lane = Math.min(this.lanes.length - 1, bestIndex + jitter)
     // Hold the lane until the previous comment has mostly left the screen.
     const occupyFrac =
-      this.density === 'buzz' ? 0.52 : this.density === 'busy' ? 0.7 : 0.84
+      this.density === 'buzz' ? 0.26 : this.density === 'busy' ? 0.7 : 0.84
     const occupyUntil = now + durationMs * occupyFrac
     this.lanes[lane].freeAt = Math.max(this.lanes[lane].freeAt, occupyUntil)
     return lane
@@ -80,8 +80,8 @@ export class LaneManager {
 
   laneTopPercent(lane: number): number {
     const count = Math.max(1, this.lanes.length)
-    const usable = 76
-    const start = 8
+    const usable = this.density === 'buzz' ? 98 : 76
+    const start = this.density === 'buzz' ? 1 : 8
     if (count === 1) return start + usable / 2
     return start + (usable * lane) / (count - 1)
   }

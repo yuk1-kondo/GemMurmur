@@ -128,7 +128,6 @@ export function createAmbientBatch(language: ResolvedLanguage, count: number): C
 export function createBuzzFloodBatch(language: ResolvedLanguage, count: number): CommentDraft[] {
   const now = Date.now()
   return pickSlangBatch(language, count).map((text) => {
-    rememberText(text)
     return {
       id: createId('buzz'),
       text,
@@ -138,6 +137,7 @@ export function createBuzzFloodBatch(language: ResolvedLanguage, count: number):
       emphasis: 0.7 + Math.random() * 0.3,
       language,
       source: 'interaction',
+      isBuzz: true,
       createdAt: now,
       expiresAt: now + QUEUE.ttlMs,
     }

@@ -49,7 +49,7 @@ type TemplateBuilder = (ctx: {
   description: string
 }) => string
 
-const KIND_TEMPLATES: Record<ResolvedLanguage, Partial<Record<PageKind, TemplateBuilder[]>>> = {
+const KIND_TEMPLATES: Partial<Record<ResolvedLanguage, Partial<Record<PageKind, TemplateBuilder[]>>>> = {
   ja: {
     news: [
       ({ keyword }) => (keyword ? `「${keyword}」マジ？` : 'ニュース速報か'),
@@ -204,7 +204,7 @@ const KIND_TEMPLATES: Record<ResolvedLanguage, Partial<Record<PageKind, Template
   },
 }
 
-const GENERIC_TEMPLATES: Record<ResolvedLanguage, TemplateBuilder[]> = {
+const GENERIC_TEMPLATES: Partial<Record<ResolvedLanguage, TemplateBuilder[]>> = {
   ja: [
     ({ keyword }) => (keyword ? `「${keyword}」ほう` : 'ほう'),
     ({ phrase }) => (phrase ? `${phrase}？` : 'なるほど'),
@@ -259,8 +259,8 @@ function buildCandidates(language: ResolvedLanguage, context: PageContext): stri
   const keyword = keywordFromContext(context)
   const phrase = firstPhrase(context.viewportText || context.nearbyText || context.description)
   const description = context.description
-  const kindPool = KIND_TEMPLATES[language][context.kind] ?? []
-  const generic = GENERIC_TEMPLATES[language]
+  const kindPool = KIND_TEMPLATES[language]?.[context.kind] ?? []
+  const generic = GENERIC_TEMPLATES[language] ?? []
   const args = { keyword, phrase, kind: context.kind, description }
 
   const lines: string[] = []

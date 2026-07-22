@@ -405,11 +405,52 @@ const zhHant: Pool = {
   buzz: ['看不見？這是設定', '彈幕風暴', '字太多了', '讀不了才對'],
 }
 
+/**
+ * A compact, native-language safety net for every supported language. Gemma
+ * provides contextual comments when ready; this pool keeps the first-run and
+ * offline experience in the selected language too.
+ */
+function simplePool(ambient: string[], waiting: string[]): Pool {
+  return {
+    fast_scroll: ambient.slice(0, 4),
+    idle: ambient.slice(2, 6),
+    oscillate: ambient.slice(1, 5),
+    tab_return: ambient.slice(0, 4),
+    bottom: ambient.slice(2, 6),
+    top: ambient.slice(1, 5),
+    rapid_click: ambient.slice(0, 4),
+    navigate: ambient.slice(2, 6),
+    mouse_shake: ambient.slice(1, 5),
+    mouse_fast: ambient.slice(0, 4),
+    ambient,
+    model_wait: waiting,
+    long_session: ambient.slice(-5),
+    buzz: ambient.slice(0, 5),
+  }
+}
+
+const EXTRA_POOLS: Record<Exclude<ResolvedLanguage, 'ja' | 'en' | 'zh-Hans' | 'zh-Hant'>, Pool> = {
+  es: simplePool(['¿en serio?', 'espera', 'qué fuerte', 'fuente?', 'interesante', 'sigue', 'claro', '¿y luego?', 'no puede ser', 'bien visto'], ['el público está entrando', 'preparando la IA', 'un momento', 'cargando el modelo', 'ya casi']),
+  fr: simplePool(['vraiment ?', 'attends', 'incroyable', 'la source ?', 'intéressant', 'continue', 'd’accord', 'et alors ?', 'pas possible', 'bien vu'], ['le public arrive', 'préparation de l’IA', 'un instant', 'chargement du modèle', 'presque prêt']),
+  de: simplePool(['echt jetzt?', 'warte', 'krass', 'quelle?', 'interessant', 'weiter', 'stimmt', 'und dann?', 'unglaublich', 'gut gesehen'], ['das Publikum kommt', 'KI wird vorbereitet', 'einen Moment', 'Modell wird geladen', 'gleich bereit']),
+  'pt-BR': simplePool(['sério?', 'espera', 'caramba', 'fonte?', 'interessante', 'continua', 'verdade', 'e aí?', 'não acredito', 'boa'], ['o público está chegando', 'preparando a IA', 'só um momento', 'carregando o modelo', 'quase pronto']),
+  it: simplePool(['davvero?', 'aspetta', 'pazzesco', 'fonte?', 'interessante', 'continua', 'vero', 'e quindi?', 'non ci credo', 'bella'], ['il pubblico sta arrivando', 'preparazione IA', 'un attimo', 'caricamento del modello', 'quasi pronto']),
+  ko: simplePool(['진짜?', '잠깐', '대박', '출처?', '흥미롭네', '계속', '맞네', '그래서?', '말도 안 돼', '좋다'], ['관객 입장 중', 'AI 준비 중', '잠시만요', '모델 로딩 중', '거의 됐어요']),
+  ru: simplePool(['серьёзно?', 'подожди', 'сильно', 'источник?', 'интересно', 'продолжай', 'точно', 'и что?', 'невероятно', 'хорошо сказано'], ['зрители заходят', 'ИИ готовится', 'секунду', 'модель загружается', 'почти готово']),
+  ar: simplePool(['حقاً؟', 'انتظر', 'مذهل', 'المصدر؟', 'مثير للاهتمام', 'أكمل', 'صحيح', 'وماذا بعد؟', 'لا أصدق', 'أحسنت'], ['الجمهور يدخل', 'جارٍ إعداد الذكاء الاصطناعي', 'لحظة من فضلك', 'جارٍ تحميل النموذج', 'أوشك على الجاهزية']),
+  hi: simplePool(['सच में?', 'रुको', 'कमाल', 'स्रोत?', 'दिलचस्प', 'आगे बताओ', 'सही है', 'फिर?', 'यक़ीन नहीं', 'बढ़िया'], ['दर्शक आ रहे हैं', 'AI तैयार हो रहा है', 'एक पल', 'मॉडल लोड हो रहा है', 'लगभग तैयार']),
+  id: simplePool(['serius?', 'tunggu', 'keren', 'sumber?', 'menarik', 'lanjut', 'benar', 'terus?', 'tidak mungkin', 'bagus'], ['penonton sedang masuk', 'menyiapkan AI', 'sebentar', 'memuat model', 'hampir siap']),
+  tr: simplePool(['gerçekten mi?', 'bekle', 'vay be', 'kaynak?', 'ilginç', 'devam et', 'doğru', 'peki sonra?', 'inanamıyorum', 'iyiymiş'], ['izleyiciler geliyor', 'yapay zekâ hazırlanıyor', 'bir dakika', 'model yükleniyor', 'neredeyse hazır']),
+  vi: simplePool(['thật sao?', 'đợi đã', 'đỉnh thật', 'nguồn?', 'thú vị', 'tiếp đi', 'đúng vậy', 'rồi sao?', 'không thể tin được', 'hay đấy'], ['khán giả đang vào', 'đang chuẩn bị AI', 'chờ một chút', 'đang tải mô hình', 'sắp xong']),
+  th: simplePool(['จริงเหรอ?', 'เดี๋ยวก่อน', 'สุดยอด', 'แหล่งที่มา?', 'น่าสนใจ', 'ต่อเลย', 'จริงด้วย', 'แล้วไงต่อ?', 'ไม่น่าเชื่อ', 'ดีเลย'], ['ผู้ชมกำลังเข้ามา', 'กำลังเตรียม AI', 'รอสักครู่', 'กำลังโหลดโมเดล', 'เกือบพร้อมแล้ว']),
+}
+
 const POOLS: Record<ResolvedLanguage, Pool> = {
   ja,
   en,
   'zh-Hans': zhHans,
   'zh-Hant': zhHant,
+  ...EXTRA_POOLS,
 }
 
 /** High-energy net-slang used for buzz / fast-scroll reactions (nico-douga flavored). */
@@ -540,16 +581,41 @@ const SLANG: Record<ResolvedLanguage, string[]> = {
     '滑太快了www',
     '倍速黨',
   ],
+  es: ['jajaja', 'xd', 'brutal', 'literal', 'buenísimo', 'qué locura', 'tremendo', 'épico', 'vamos', 'dale', 'vamoos', 'uff', 'cine', 'god', '10/10', 'f', 'gg', 'qué nivel', 'se prendió', 'una locura'],
+  fr: ['mdr', 'ptdr', 'lol', 'incroyable', 'tellement vrai', 'masterclass', 'ça régale', 'bien vu', 'force', 'gg', 'letsgo', 'trop fort', 'banger', 'dinguerie', 'le feu', 'validé', 'énorme', 'on y va', 'ça part', 'quel niveau'],
+  de: ['lol', 'haha', 'wild', 'heftig', 'stark', 'krass', 'fühl ich', 'einfach so', 'gg', 'lets go', 'peak', 'zu gut', 'richtig stark', 'mega', 'wow', 'läuft', 'ab gehts', 'legende', 'unfassbar', 'feier ich'],
+  'pt-BR': ['kkkk', 'ksksks', 'mano', 'brabo', 'brabíssimo', 'real', 'bom demais', 'aí sim', 'bora', 'vamo', 'muito bom', 'monstro', 'top', 'gg', 'absurdo', 'gênio', 'tá pago', 'que isso', 'pesado', 'só vai'],
+  it: ['ahah', 'lol', 'pazzesco', 'vero', 'top', 'ci sta', 'spacca', 'troppo forte', 'grande', 'dai', 'gg', 'assurdo', 'che bomba', 'mitico', 'vai così', 'bellissimo', 'ci siamo', 'che livello', 'fantastico', 'fuoco'],
+  ko: ['ㅋㅋㅋ', 'ㅎㅎㅎ', 'ㄹㅇ', '인정', '대박', '미쳤다', '레전드', '갓벽', '가보자고', 'ㄱㄱ', '굿', '찢었다', '와우', '최고다', '폼 미쳤다', '이게 되네', '완전 좋다', '킹정', '캬', '불타네'],
+  ru: ['ахах', 'лол', 'жиза', 'база', 'имба', 'топ', 'кайф', 'огонь', 'мощно', 'легенда', 'погнали', 'гг', 'вот это да', 'красота', 'сильно', 'кайфово', 'разнос', 'идеально', 'вау', 'поехали'],
+  ar: ['هههه', 'واو', 'أسطوري', 'رهيب', 'جامد', 'فخم', 'يا سلام', 'كفو', 'تمام', 'حماس', 'يلا', 'عظيم', 'فعلاً', 'ممتاز', 'قوي', 'يا ساتر', 'برافو', 'GG', 'نار', 'روعة'],
+  hi: ['वाह', 'कमाल', 'सही है', 'बहुत बढ़िया', 'गजब', 'झकास', 'मज़ा आ गया', 'वाह भाई', 'फुल ऑन', 'चलो', 'OP', 'GG', 'क्या बात', 'धमाल', 'एकदम सही', 'जबरदस्त', 'मस्त', 'बहुत खूब', 'लेट्स गो', 'वाह वाह'],
+  id: ['wkwk', 'kwkw', 'mantap', 'setuju', 'gila', 'keren', 'gas', 'lanjut', 'auto', 'pecah', 'asik', 'hebat', 'gg', 'seru banget', 'mantul', 'sikat', 'wow', 'cakep', 'top banget', 'rame'],
+  tr: ['ahah', 'lol', 'aynen', 'efsane', 'müthiş', 'harika', 'çok iyi', 'vay be', 'hadi', 'coştu', 'kral', 'gg', 'acayip', 'süper', 'güzelmiş', 'tam isabet', 'çok iyi ya', 'şahane', 'devam', 'bomba'],
+  vi: ['haha', 'đỉnh', 'chuẩn', 'hay quá', 'ảo thật', 'xịn', 'cháy', 'tuyệt vời', 'triển thôi', 'gg', 'quá đã', 'đúng rồi', 'hay ghê', 'đỉnh cao', 'wow', 'quá ngon', 'bùng nổ', 'đã quá', 'vui ghê', 'tiếp nào'],
+  th: ['555', '5555', 'สุดยอด', 'จริง', 'ดีมาก', 'ว้าว', 'ปังมาก', 'เยี่ยม', 'ไปต่อ', 'ฮามาก', 'ดีสุดๆ', 'เจ๋งมาก', 'สุดปัง', 'มาเลย', 'GG', 'สนุกมาก', 'โดนใจ', 'น่ารัก', 'เลิศ', 'ไฟลุก'],
 }
 
-/** Pick up to `count` distinct slang lines, shuffled. */
+/** Pick a random crowd chant. Repeats are intentional once a festival exceeds a pool. */
 export function pickSlangBatch(language: ResolvedLanguage, count: number): string[] {
   const pool = [...SLANG[language]]
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[pool[i], pool[j]] = [pool[j], pool[i]]
   }
-  return pool.slice(0, count)
+  if (pool.length === 0) return []
+  const picks: string[] = []
+  while (picks.length < count) {
+    const offset = picks.length % pool.length
+    if (offset === 0 && picks.length > 0) {
+      for (let i = pool.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[pool[i], pool[j]] = [pool[j], pool[i]]
+      }
+    }
+    picks.push(pool[offset])
+  }
+  return picks
 }
 
 /** One slang line, preferring texts not in `recent`. */

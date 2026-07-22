@@ -17,6 +17,8 @@ export function ensureOverlayRoot(): HTMLElement {
     zIndex: String(OVERLAY_Z_INDEX),
     fontFamily: FONT_STACK,
   })
+  // Dynamic viewport units keep the overlay aligned when mobile browser chrome moves.
+  root.style.height = '100dvh'
 
   const style = document.createElement('style')
   style.textContent = `
@@ -37,6 +39,10 @@ export function ensureOverlayRoot(): HTMLElement {
       z-index: 3;
       text-align: center;
       max-width: 90vw;
+    }
+    #${OVERLAY_ROOT_ID} .murmur-comment-rtl {
+      text-align: right;
+      unicode-bidi: plaintext;
     }
     #${OVERLAY_ROOT_ID} .murmur-status {
       position: absolute;
@@ -60,15 +66,19 @@ export function ensureOverlayRoot(): HTMLElement {
       text-align: right;
       opacity: 0.82;
     }
+    #${OVERLAY_ROOT_ID} .murmur-status[dir="rtl"] {
+      text-align: right;
+      unicode-bidi: plaintext;
+    }
     #${OVERLAY_ROOT_ID} .murmur-status.error {
-      color: #ff2d2d;
+      color: #c43c3c;
       font-size: 42px;
       text-shadow:
-        -2px -2px 0 #1a0000,
-         2px -2px 0 #1a0000,
-        -2px  2px 0 #1a0000,
-         2px  2px 0 #1a0000,
-         0 0 12px rgba(0,0,0,0.55);
+        -1px -1px 0 #fff,
+         1px -1px 0 #fff,
+        -1px  1px 0 #fff,
+         1px  1px 0 #fff,
+         0 1px 2px rgb(0 0 0 / 25%);
     }
     #${OVERLAY_ROOT_ID} .murmur-status.info {
       color: #fff;
@@ -89,22 +99,32 @@ export function ensureOverlayRoot(): HTMLElement {
       z-index: 2;
     }
     #${OVERLAY_ROOT_ID} .murmur-controls button {
-      border: none;
-      border-radius: 999px;
+      min-height: 40px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
       padding: 8px 12px;
       font: 600 12px/1 ${FONT_STACK};
-      background: rgba(20,20,20,0.72);
-      color: #fff;
+      background: rgb(255 255 255 / 94%);
+      color: #0d0d0d;
       cursor: pointer;
-      backdrop-filter: blur(6px);
-      transition: background 120ms ease, transform 120ms ease;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+      transition: background 120ms ease, border-color 120ms ease;
     }
-    #${OVERLAY_ROOT_ID} .murmur-controls button:hover {
-      background: rgba(40,40,40,0.88);
-      transform: translateY(-1px);
+    @media (hover: hover) {
+      #${OVERLAY_ROOT_ID} .murmur-controls button:hover {
+        border-color: #d0d0d0;
+        background: #efefef;
+      }
     }
-    #${OVERLAY_ROOT_ID} .murmur-controls button:active {
-      transform: translateY(0);
+    #${OVERLAY_ROOT_ID} .murmur-controls button:focus-visible {
+      outline: 3px solid rgb(16 163 127 / 40%);
+      outline-offset: 2px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #${OVERLAY_ROOT_ID} .murmur-comment,
+      #${OVERLAY_ROOT_ID} .murmur-controls button {
+        transition-duration: 0.01ms !important;
+      }
     }
   `
   root.appendChild(style)

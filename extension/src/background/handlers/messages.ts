@@ -1,6 +1,5 @@
 import { BUZZ, MODEL } from '@/shared/constants'
 import type { MurmurMessage, RuntimeState } from '@/shared/messages'
-import { USER_MESSAGES } from '@/shared/user-messages'
 import type { BuzzState, ModelState, MurmurSettings } from '@/shared/types'
 import { broadcastAll } from '../broadcast'
 import { clearBuzz, forceBuzz, tickBuzz } from '../buzz'
@@ -21,6 +20,7 @@ export function createGenerationDeps(app: AppState, hooks: {
 }): GenerationDeps {
   return {
     getSettings: () => app.settings,
+    getBuzz: () => app.buzz,
     getModel: () => app.model,
     ensureModelRuntime: hooks.ensureModelRuntime,
     onFatalModelError: async (message: string) => {
@@ -31,9 +31,9 @@ export function createGenerationDeps(app: AppState, hooks: {
       })
       await broadcastAll({
         type: 'SHOW_STATUS',
-        message: /webgpu/i.test(message)
-          ? USER_MESSAGES.webgpuUnsupported
-          : USER_MESSAGES.modelLoadFailed,
+        messageKey: /webgpu/i.test(message)
+          ? 'webgpuUnsupported'
+          : 'modelLoadFailed',
         level: 'error',
       })
     },
@@ -244,9 +244,9 @@ export async function handleMessage(
       })
       await broadcastAll({
         type: 'SHOW_STATUS',
-        message: unsupported
-          ? USER_MESSAGES.webgpuUnsupported
-          : USER_MESSAGES.modelLoadFailedWithReason(friendly),
+        messageKey: unsupported
+          ? 'webgpuUnsupported'
+          : 'modelLoadFailed',
         level: 'error',
       })
       void broadcastAll({ type: 'MODEL_STATUS', model: app.model })
@@ -288,7 +288,7 @@ export async function probeWebGpu(app: AppState): Promise<void> {
       })
       await broadcastAll({
         type: 'SHOW_STATUS',
-        message: USER_MESSAGES.webgpuUnsupported,
+        messageKey: 'webgpuUnsupported',
         level: 'error',
       })
       void broadcastAll({ type: 'MODEL_STATUS', model: app.model })

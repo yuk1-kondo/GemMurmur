@@ -5,6 +5,7 @@ import { isHardStopped } from '@/shared/runtime-guards'
 import { extractPageContext } from '../extract/dom'
 import { isExtensionContextValid } from './extension-context'
 import { requestGemmaIfReady } from './gemma-client'
+import { applyDemoToggle } from './demo-toggles'
 import {
   enterPausedState,
   mountControls,
@@ -20,6 +21,7 @@ function applyRuntimeState(): void {
     .then((state) => {
       if (!isExtensionContextValid()) return
       const prevReady = runtime.modelReady
+      const wasBuzzMode = runtime.settings?.buzzMode ?? false
       runtime.modelReady = state.model.status === 'ready'
       runtime.settings = state.settings
       runtime.density = state.buzz.density
@@ -46,6 +48,10 @@ function applyRuntimeState(): void {
       if (!runtime.allowed) {
         startRuntime(state)
         return
+      }
+
+      if (state.settings.buzzMode !== wasBuzzMode) {
+        applyDemoToggle('force_buzz', state.settings.buzzMode)
       }
 
       runtime.buffer?.setDensity(runtime.density)

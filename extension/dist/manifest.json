@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "GemMurmur",
-  "version": "0.10.2",
-  "description": "Every page has an audience. Local Gemma-powered live comments (GemMurmur).",
+  "default_locale": "en",
+  "name": "__MSG_extensionName__",
+  "version": "0.10.9",
+  "description": "__MSG_extensionDescription__",
   "icons": {
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "GemMurmur",
+    "default_title": "__MSG_extensionName__",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
@@ -38,7 +39,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-B-wlDdXD.js"
+        "assets/main.ts-loader-DkAJIbH5.js"
       ],
       "matches": [
         "http://*/*",
@@ -64,10 +65,10 @@
         "https://*/*"
       ],
       "resources": [
-        "assets/constants-CPMpig9M.js",
-        "assets/safety-D0AnSegT.js",
-        "assets/runtime-storage-Bf7Ly_8G.js",
-        "assets/main.ts-CVjPHe3v.js"
+        "assets/constants-D0lSpGbK.js",
+        "assets/ui-i18n-Bg6x_m1O.js",
+        "assets/pools-DMFxP_kh.js",
+        "assets/main.ts-Crp-vcBZ.js"
       ],
       "use_dynamic_url": false
     }

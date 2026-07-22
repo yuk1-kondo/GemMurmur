@@ -1,6 +1,24 @@
-export type CommentLanguage = 'auto' | 'ja' | 'en' | 'zh-Hans' | 'zh-Hant'
+/** Languages intentionally supported end-to-end by the product surface and comment stream. */
+export type ResolvedLanguage =
+  | 'ar'
+  | 'de'
+  | 'en'
+  | 'es'
+  | 'fr'
+  | 'hi'
+  | 'id'
+  | 'it'
+  | 'ja'
+  | 'ko'
+  | 'pt-BR'
+  | 'ru'
+  | 'th'
+  | 'tr'
+  | 'vi'
+  | 'zh-Hans'
+  | 'zh-Hant'
 
-export type ResolvedLanguage = 'ja' | 'en' | 'zh-Hans' | 'zh-Hant'
+export type CommentLanguage = 'auto' | ResolvedLanguage
 
 export type PageKind =
   | 'news'
@@ -83,6 +101,8 @@ export interface CommentDraft {
   emphasis: number
   language: ResolvedLanguage
   source: 'rule' | 'gemma' | 'interaction'
+  /** Festival comments may intentionally repeat: a crowd chant is part of Buzz mode. */
+  isBuzz?: boolean
   createdAt: number
   expiresAt: number
   /** When set, renderer uses this placement instead of its usual picker. */
@@ -94,6 +114,8 @@ export interface DisplayComment extends CommentDraft {
   placement: CommentPlacement
   color: AccentColor
   durationMs: number
+  /** Visual travel direction is independent from text direction (for RTL languages). */
+  flowDirection?: 'right-to-left' | 'left-to-right'
   lane?: number
 }
 
@@ -116,6 +138,8 @@ export interface MurmurSettings {
   enabled: boolean
   paused: boolean
   language: CommentLanguage
+  /** Public preview of the high-density stream that normally follows long browsing sessions. */
+  buzzMode: boolean
   stoppedPages: string[]
   stoppedDomains: string[]
   demoMode: boolean
@@ -141,6 +165,7 @@ export const DEFAULT_SETTINGS: MurmurSettings = {
   enabled: true,
   paused: false,
   language: 'auto',
+  buzzMode: false,
   stoppedPages: [],
   stoppedDomains: [],
   demoMode: false,

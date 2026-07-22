@@ -1,9 +1,9 @@
-import { FEATURES, GENERATION } from '@/shared/constants'
+import { FEATURES, GENERATION, QUEUE } from '@/shared/constants'
 import { pageKeyFromUrl } from '@/shared/page-key'
 import { recordMetric } from '@/shared/metrics'
 import { isExtensionContextValid } from './extension-context'
 import { requestGemmaComments } from './gemma-client'
-import { refillAmbientComments } from './rule-feed'
+import { refillAmbientComments, refillBuzzComments } from './rule-feed'
 import { runtime } from './state'
 
 export function pageKey(url = location.href): string {
@@ -20,14 +20,29 @@ export function clearSpawnLoop(): void {
 export function requestRefillIfNeeded(): void {
   if (!isExtensionContextValid() || !runtime.pageContext) return
 
+  if (runtime.density === 'buzz') {
+    // Static crowd chants guarantee visual coverage; Gemma independently adds
+    // a much larger local-slang batch whenever it is ready.
+    if ((runtime.buffer?.size() ?? 0) < Math.floor(QUEUE.maxBuffer * 0.72)) {
+      refillBuzzComments(runtime.language, Math.floor(QUEUE.maxBuffer * 0.34))
+    }
+    if (!runtime.modelReady) return
+    const now = Date.now()
+    if (now - runtime.lastGemmaRequestAt < GENERATION.buzzRefillMinGapMs) return
+    runtime.lastGemmaRequestAt = now
+    requestGemmaComments(runtime.pageContext, GENERATION.buzzBatchCap)
+    return
+  }
+
+  const needsRefill = runtime.buffer?.needsRefill() ?? false
   if (!runtime.modelReady) {
     if (FEATURES.gemmaOnlyComments) return
-    if (!runtime.buffer?.needsRefill()) return
+    if (!needsRefill) return
     refillAmbientComments(runtime.language, true)
     return
   }
 
-  if (!runtime.buffer?.needsRefill()) return
+  if (!needsRefill) return
   const now = Date.now()
   if (now - runtime.lastGemmaRequestAt < GENERATION.gemmaRefillMinGapMs) return
   runtime.lastGemmaRequestAt = now
