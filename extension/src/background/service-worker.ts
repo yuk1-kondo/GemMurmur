@@ -19,7 +19,6 @@ const app: AppState = {
     enabled: true,
     paused: false,
     language: 'auto',
-    buzzMode: false,
     stoppedPages: [],
     stoppedDomains: [],
     demoMode: false,

@@ -2,7 +2,6 @@ import type { CommentDraft, DensityMode, DisplayComment } from '@/shared/types'
 import { INTERACTION } from '@/shared/constants'
 import { CommentTextLedger } from '@/shared/text-dedup'
 import { ensureOverlayRoot } from '../overlay/root'
-import { isRightToLeft } from '@/shared/language'
 import { LaneManager } from './lanes'
 import {
   colorCss,
@@ -47,7 +46,6 @@ export class CommentRenderer {
     const el = document.createElement('div')
     el.className = `murmur-status ${level} ${placement}`
     el.textContent = message
-    el.dir = /[\u0600-\u06ff]/.test(message) ? 'rtl' : 'auto'
     this.root.appendChild(el)
     if (options.persist) return
     window.setTimeout(() => el.remove(), level === 'error' ? 8_000 : 4_000)
@@ -65,36 +63,26 @@ export class CommentRenderer {
   }
 
   enqueue(draft: CommentDraft): void {
-    if (!draft.isBuzz && this.textLedger.has(draft.text)) return
-    if (!draft.isBuzz) this.textLedger.add(draft.text)
+    if (this.textLedger.has(draft.text)) return
+    this.textLedger.add(draft.text)
     const darkBg = estimateBackgroundIsDark()
     const slangy = draft.source === 'interaction' || draft.category === 'crowd'
-    const buzzVisual = this.density === 'buzz' || draft.isBuzz === true
     const size = slangy
-      ? pickSlangSize(buzzVisual)
+      ? pickSlangSize()
       : pickSize(draft.emphasis, this.density, draft.text, draft.importance)
     const placement =
       draft.preferredPlacement ??
       (slangy
-        ? pickSlangPlacement(buzzVisual)
+        ? pickSlangPlacement()
         : pickPlacement(draft.category, draft.emphasis, draft.text))
-    const color = slangy
-      ? pickSlangColor(!darkBg, buzzVisual)
-      : pickColor(draft.emphasis, !darkBg)
+    const color = slangy ? pickSlangColor(!darkBg) : pickColor(draft.emphasis, !darkBg)
     const durationMs = durationForText(draft.text, size)
-    // A deliberately rare reverse traveller adds a small arcade-like surprise
-    // while preserving the conventional right-to-left stream as the default.
-    const flowDirection =
-      placement === 'scroll' && !buzzVisual && Math.random() < 0.035
-        ? 'left-to-right' as const
-        : 'right-to-left' as const
     const display: DisplayComment = {
       ...draft,
       size,
       placement,
       color,
       durationMs,
-      flowDirection,
     }
     this.mount(display)
   }
@@ -103,8 +91,6 @@ export class CommentRenderer {
     const el = document.createElement('div')
     el.className = 'murmur-comment'
     el.textContent = comment.text.replace(/[\r\n]+/g, ' ').trim()
-    el.dir = isRightToLeft(comment.language) ? 'rtl' : 'auto'
-    if (isRightToLeft(comment.language)) el.classList.add('murmur-comment-rtl')
     el.style.color = colorCss(comment.color)
     el.style.fontSize = `${fontSizePx(comment.size)}px`
     el.style.textShadow = textShadow(comment.color)
@@ -158,14 +144,7 @@ export class CommentRenderer {
 
     const lane = this.lanes.pickLane(performance.now(), comment.durationMs)
     el.style.top = `${this.lanes.laneTopPercent(lane)}%`
-    const flowsLeftToRight = comment.flowDirection === 'left-to-right'
-    if (flowsLeftToRight) {
-      el.style.right = '100%'
-      el.style.left = 'auto'
-    } else {
-      el.style.left = '100%'
-      el.style.right = 'auto'
-    }
+    el.style.left = '100%'
     el.style.transform = 'translateX(0)'
     this.root.appendChild(el)
     this.active += 1
@@ -173,7 +152,7 @@ export class CommentRenderer {
     requestAnimationFrame(() => {
       const travel = window.innerWidth + el.offsetWidth + 40
       el.style.transition = `transform ${comment.durationMs}ms linear`
-      el.style.transform = `translateX(${flowsLeftToRight ? travel : -travel}px)`
+      el.style.transform = `translateX(-${travel}px)`
     })
 
     window.setTimeout(() => {

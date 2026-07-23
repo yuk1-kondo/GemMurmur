@@ -19,7 +19,6 @@ export class InteractionDetector {
   private lastMouseAt = 0
   private mouseDirChanges: Array<{ sign: number; at: number }> = []
   private scrollSamples: Array<{ y: number; at: number }> = []
-  private readonly usesPointerEvents = 'PointerEvent' in window
 
   constructor(onEvent: Handler) {
     this.onEvent = onEvent
@@ -54,28 +53,18 @@ export class InteractionDetector {
   private bind(): void {
     window.addEventListener('scroll', this.onScroll, { passive: true })
     window.addEventListener('click', this.onClick, true)
-    if (this.usesPointerEvents) {
-      window.addEventListener('pointermove', this.onPointerMove, { passive: true })
-    } else {
-      window.addEventListener('mousemove', this.onMouseMove, { passive: true })
-    }
+    window.addEventListener('mousemove', this.onMouseMove, { passive: true })
     document.addEventListener('visibilitychange', this.onVisibility)
     window.addEventListener('pagehide', this.onNavigate)
   }
 
   private onMouseMove = (event: MouseEvent): void => {
-    this.trackPointer(event.clientX, event.clientY)
-  }
-
-  private onPointerMove = (event: PointerEvent): void => {
-    this.trackPointer(event.clientX, event.clientY)
-  }
-
-  private trackPointer(x: number, y: number): void {
     if (this.disposed) return
     const now = performance.now()
     // Throttle: mousemove fires very frequently; ~25 samples/sec is plenty.
     if (this.lastMouseAt > 0 && now - this.lastMouseAt < 40) return
+    const x = event.clientX
+    const y = event.clientY
 
     if (this.lastMouseAt > 0) {
       const dt = Math.max(8, now - this.lastMouseAt)
@@ -184,11 +173,7 @@ export class InteractionDetector {
     this.disposed = true
     window.removeEventListener('scroll', this.onScroll)
     window.removeEventListener('click', this.onClick, true)
-    if (this.usesPointerEvents) {
-      window.removeEventListener('pointermove', this.onPointerMove)
-    } else {
-      window.removeEventListener('mousemove', this.onMouseMove)
-    }
+    window.removeEventListener('mousemove', this.onMouseMove)
     document.removeEventListener('visibilitychange', this.onVisibility)
     window.removeEventListener('pagehide', this.onNavigate)
     if (this.idleTimer != null) window.clearTimeout(this.idleTimer)

@@ -50,7 +50,7 @@ const ZH_HANT: PersonaPool = {
   unknown: ['路人', '吐槽黨', '共鳴黨', '興奮黨'],
 }
 
-const POOLS: Partial<Record<ResolvedLanguage, PersonaPool>> = {
+const POOLS: Record<ResolvedLanguage, PersonaPool> = {
   ja: JA,
   en: EN,
   'zh-Hans': ZH_HANS,
@@ -59,6 +59,5 @@ const POOLS: Partial<Record<ResolvedLanguage, PersonaPool>> = {
 
 /** Internal-only persona mix. Never exposed in settings (spec §9). */
 export function personaBias(kind: PageKind, language: ResolvedLanguage): string[] {
-  const pool = POOLS[language] ?? EN
-  return pool[kind] ?? pool.unknown
+  return POOLS[language][kind] ?? POOLS[language].unknown
 }

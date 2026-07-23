@@ -1,9 +1,7 @@
-import { LANGUAGE_NAMES } from '@/shared/language'
 import { personaBias } from '@/shared/personas'
-import { pickSlangBatch } from '@/shared/rule-comments/pools'
 import type { PageContext, ResolvedLanguage } from '@/shared/types'
 
-const STYLE_ANGLES: Partial<Record<ResolvedLanguage, readonly string[]>> = {
+const STYLE_ANGLES: Record<ResolvedLanguage, readonly string[]> = {
   ja: [
     'ツッコミ・共感・軽い皮肉を混ぜる。語尾は毎回変える。',
     '断定・感想多め。「それな」「ええやん」「強すぎ」系。',
@@ -38,7 +36,7 @@ const STYLE_ANGLES: Partial<Record<ResolvedLanguage, readonly string[]>> = {
   ],
 }
 
-const EXAMPLE_LINES: Partial<Record<ResolvedLanguage, string[]>> = {
+const EXAMPLE_LINES: Record<ResolvedLanguage, string[]> = {
   ja: [
     'なるほど',
     'それで？',
@@ -101,11 +99,20 @@ function personaHint(context: PageContext, language: ResolvedLanguage): string {
 }
 
 function languageName(lang: ResolvedLanguage): string {
-  return LANGUAGE_NAMES[lang]
+  switch (lang) {
+    case 'ja':
+      return 'Japanese'
+    case 'zh-Hans':
+      return 'Simplified Chinese'
+    case 'zh-Hant':
+      return 'Traditional Chinese'
+    default:
+      return 'English'
+  }
 }
 
 function pickStyleAngle(language: ResolvedLanguage): string {
-  const pool = STYLE_ANGLES[language] ?? STYLE_ANGLES.en!
+  const pool = STYLE_ANGLES[language]
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
@@ -152,7 +159,7 @@ export function buildCommentPrompt(
 ): string {
   const lang = languageName(language)
   const angle = pickStyleAngle(language)
-  const examples = (EXAMPLE_LINES[language] ?? EXAMPLE_LINES.en!).join(' / ')
+  const examples = EXAMPLE_LINES[language].join(' / ')
   return [
     `Write exactly ${count} short live-audience comments in ${lang} only.`,
     `Style: ${angle}`,
@@ -197,37 +204,6 @@ export function buildCommentMinimalPrompt(
   ]
     .filter(Boolean)
     .join('\n')
-}
-
-/**
- * Buzz is a global party overlay, not a reaction to the page beneath it.
- * Keep the prompt context-free so no site content leaks into the celebration.
- */
-export function buildBuzzPrompt(count: number, language: ResolvedLanguage): string {
-  const lang = languageName(language)
-  const examples = pickSlangBatch(language, Math.min(12, count)).join(' / ')
-  return [
-    `Write exactly ${count} very short internet crowd reactions in ${lang} only.`,
-    'This is a joyful full-screen celebration flood. Ignore the web page completely.',
-    'Do not mention, summarize, answer, or infer anything about the page.',
-    'Rules:',
-    '- One reaction per line',
-    '- No numbering, bullets, JSON, quotes, explanations, or hashtags',
-    '- 2-28 characters each; make every line different',
-    '- Use broadly understood local online slang, cheers, laughter, emoji, and reaction fragments',
-    '- Keep it playful and inclusive: no hate, slurs, sexual content, threats, or targeted insults',
-    `- Local vibe examples (do not copy every one): ${examples}`,
-    'Output only the reactions.',
-  ].join('\n')
-}
-
-/** A terse retry for the on-device model if the primary Buzz output is malformed. */
-export function buildBuzzMinimalPrompt(count: number, language: ResolvedLanguage): string {
-  const lang = languageName(language)
-  return [
-    `${count} short happy internet-slang reactions in ${lang}.`,
-    'Ignore the web page. One per line. No numbering. No explanations. Safe and playful only.',
-  ].join('\n')
 }
 
 /** Retry keeps the same structure with a stricter footer. */

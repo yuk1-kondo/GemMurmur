@@ -1,16 +1,14 @@
 ⚠️ このフォルダ（extension）は Chrome に読み込めません
 
-読み込むのは sibling の dist/ です（manifest.json 付きのビルド成果物）。
+manifest.json はビルド後に dist/ に生成されます。
 
 手順:
-1. chrome://extensions を開く
-2. 「パッケージ化されていない拡張機能を読み込む」
-3. 次のいずれかのフォルダを選択（フォルダを選ぶ。manifest.json ファイルではない）
-   - extension/dist
-
-ソースを変更したときは:
 1. ターミナルで extension フォルダに移動
 2. npm install
 3. npm run build
+4. chrome://extensions で「パッケージ化されていない拡張機能を読み込む」
+5. 次のいずれかのフォルダを選択（フォルダを選ぶ。manifest.json ファイルではない）
+   - extension/dist
+   - extension/chrome-extension（dist へのショートカット）
 
 Mac: load-in-chrome.command をダブルクリックでも案内できます。

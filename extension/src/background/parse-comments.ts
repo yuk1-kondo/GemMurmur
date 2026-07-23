@@ -77,14 +77,7 @@ function languageMatches(text: string, language: ResolvedLanguage): boolean {
   if (language === 'ja') return detected === 'ja' || detected === 'en'
   if (language === 'en') return detected === 'en' || detected === 'ja'
   if (language === 'zh-Hans') return detected === 'zh-Hans' || detected === 'zh-Hant'
-  if (language === 'zh-Hant') return detected === 'zh-Hant' || detected === 'zh-Hans'
-  if (language === 'ar' || language === 'hi' || language === 'ko' || language === 'ru' || language === 'th') {
-    return detected === language
-  }
-  // Latin-script languages cannot be identified reliably without a large
-  // detector. The prompt constrains output language; this only rejects a
-  // clearly different script before it enters the on-page stream.
-  return detected === 'en'
+  return detected === 'zh-Hant' || detected === 'zh-Hans'
 }
 
 function acceptLine(
@@ -93,7 +86,7 @@ function acceptLine(
   context?: PageContext,
 ): string | null {
   const text = sanitizeCommentText(line)
-  if (!text || text.length < 2 || text.length > 64) return null
+  if (!text || text.length < 4 || text.length > 64) return null
   if (line.startsWith('{') || META_SKIP.test(line)) return null
   if (!languageMatches(text, language)) return null
   if (isEchoOfContext(text, context)) return null
@@ -178,7 +171,6 @@ function extractFromPlainLines(
   raw: string,
   language: ResolvedLanguage,
   context?: PageContext,
-  maxCount: number = QUEUE.batchSize,
 ): CommentDraft[] {
   const now = Date.now()
   const lines = normalizeRaw(raw)
@@ -201,7 +193,7 @@ function extractFromPlainLines(
       createdAt: now,
       expiresAt: now + QUEUE.ttlMs,
     })
-    if (out.length >= maxCount) break
+    if (out.length >= QUEUE.batchSize) break
   }
   return out
 }
@@ -210,7 +202,6 @@ export function parseGeneratedComments(
   raw: string,
   language: ResolvedLanguage,
   context?: PageContext,
-  maxCount: number = QUEUE.batchSize,
 ): CommentDraft[] {
   const trimmed = raw.trim()
   if (!trimmed) return []
@@ -224,7 +215,7 @@ export function parseGeneratedComments(
       const draft = draftFromRow(item as Record<string, unknown>, language, now, context)
       if (draft) pushUnique(out, draft)
     }
-    if (out.length > 0) return diversifyEndings(out).slice(0, maxCount)
+    if (out.length > 0) return diversifyEndings(out).slice(0, QUEUE.batchSize)
   }
 
   const ndjson: CommentDraft[] = []
@@ -239,7 +230,7 @@ export function parseGeneratedComments(
       // ignore malformed line
     }
   }
-  if (ndjson.length > 0) return diversifyEndings(ndjson).slice(0, maxCount)
+  if (ndjson.length > 0) return diversifyEndings(ndjson).slice(0, QUEUE.batchSize)
 
-  return diversifyEndings(extractFromPlainLines(trimmed, language, context, maxCount)).slice(0, maxCount)
+  return diversifyEndings(extractFromPlainLines(trimmed, language, context))
 }

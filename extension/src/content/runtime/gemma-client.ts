@@ -5,7 +5,7 @@ import { runtime } from './state'
 
 export function requestGemmaComments(
   context: PageContext,
-  count: number = GENERATION.gemmaBatchCap,
+  count = GENERATION.gemmaBatchCap,
 ): void {
   if (!isExtensionContextValid() || !runtime.allowed) return
   runtime.gemmaRequestStartedAt = performance.now()
@@ -16,7 +16,7 @@ export function requestGemmaComments(
     })
 }
 
-export function requestGemmaIfReady(count: number = GENERATION.gemmaBatchCap): void {
+export function requestGemmaIfReady(): void {
   if (!runtime.modelReady || !runtime.pageContext) return
-  requestGemmaComments(runtime.pageContext, count)
+  requestGemmaComments(runtime.pageContext)
 }

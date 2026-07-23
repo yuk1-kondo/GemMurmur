@@ -1,17 +1,16 @@
 {
   "name": "gemmurmur-extension",
-  "version": "0.10.9",
+  "version": "0.10.2",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-icons.mjs && node scripts/copy-wasm.mjs && tsc --noEmit && vite build && node scripts/write-dist-readme.mjs && node scripts/verify-build.mjs",
+    "build": "node scripts/generate-icons.mjs && node scripts/copy-wasm.mjs && tsc --noEmit && vite build && node scripts/write-dist-readme.mjs && node scripts/link-load-folder.mjs && node scripts/verify-build.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
-    "ci": "npm run lint && npm run typecheck && node scripts/generate-icons.mjs && node scripts/copy-wasm.mjs && vite build && node scripts/write-dist-readme.mjs && node scripts/verify-build.mjs",
+    "ci": "npm run lint && npm run typecheck && node scripts/generate-icons.mjs && node scripts/copy-wasm.mjs && vite build && node scripts/write-dist-readme.mjs && node scripts/link-load-folder.mjs && node scripts/verify-build.mjs",
     "verify": "node scripts/verify-build.mjs",
-    "package:webstore": "npm run build && node scripts/create-web-store-package.mjs",
     "open-extension": "open dist"
   },
   "dependencies": {

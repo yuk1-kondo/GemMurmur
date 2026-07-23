@@ -28,7 +28,7 @@ export class LocalCommentBuffer {
       const text = sanitizeCommentText(comment.text)
       if (!text) continue
       if (now > comment.expiresAt) continue
-      if (!comment.isBuzz && (this.textLedger.has(text) || this.isQueued(text))) continue
+      if (this.textLedger.has(text) || this.isQueued(text)) continue
       this.items.push({ ...comment, text })
     }
     this.items = this.items
@@ -44,7 +44,7 @@ export class LocalCommentBuffer {
     const now = Date.now()
     const text = sanitizeCommentText(comment.text)
     if (!text || now > comment.expiresAt) return
-    if (!comment.isBuzz && (this.textLedger.has(text) || this.isQueued(text))) return
+    if (this.textLedger.has(text) || this.isQueued(text)) return
     this.items.unshift({ ...comment, text })
     this.items = this.items.filter((c) => c.expiresAt > now).slice(0, QUEUE.maxBuffer)
   }
@@ -63,7 +63,7 @@ export class LocalCommentBuffer {
       const next = this.items.shift()
       if (!next) return null
       if (next.expiresAt > now) {
-        if (!next.isBuzz) this.textLedger.add(next.text)
+        this.textLedger.add(next.text)
         return next
       }
     }
@@ -80,11 +80,6 @@ export class LocalCommentBuffer {
   nextSpawnDelayMs(): number {
     const base = this.spawnIntervalMs()
 
-    // Buzz is deliberately relentless: no human-like pauses while the crowd is on.
-    if (this.density === 'buzz') {
-      return Math.round(base * (0.72 + Math.random() * 0.72))
-    }
-
     if (Math.random() < DISPLAY.spawnPauseChance) {
       const pause =
         DISPLAY.spawnPauseMultiplierMin +
@@ -99,9 +94,6 @@ export class LocalCommentBuffer {
 
   /** Gap between two comments inside the same burst. */
   burstStaggerMs(): number {
-    if (this.density === 'buzz') {
-      return Math.round(6 + Math.random() * 26)
-    }
     const min = DISPLAY.burstStaggerMinMs
     const max = DISPLAY.burstStaggerMaxMs
     return Math.round(min + Math.random() * (max - min))
@@ -109,10 +101,7 @@ export class LocalCommentBuffer {
 
   /** How many comments to show in one tick (burst mode) */
   burstCount(): number {
-    if (this.density === 'buzz') {
-      const roll = Math.random()
-      return roll < 0.2 ? 14 : roll < 0.5 ? 12 : roll < 0.8 ? 10 : 8
-    }
+    if (this.density === 'buzz') return Math.random() < 0.28 ? 2 : 1
     if (Math.random() < DISPLAY.spawnBurstChance) return Math.random() < 0.35 ? 3 : 2
     return 1
   }

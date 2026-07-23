@@ -4,7 +4,7 @@ import type { RuntimeState } from '@/shared/messages'
 import { pageKeyFromUrl } from '@/shared/page-key'
 import { patchSettingsInStorage, readRuntimeStateFromStorage } from '@/shared/runtime-storage'
 import { isHardStopped } from '@/shared/runtime-guards'
-import { runtimeMessage } from '@/shared/user-messages'
+import { USER_MESSAGES } from '@/shared/user-messages'
 import { InteractionDetector } from '../events/detector'
 import { extractPageContext, isScrollIdle } from '../extract/dom'
 import { mountOverlayControls } from '../overlay/controls'
@@ -18,7 +18,7 @@ import {
   seedBootComments,
   showInteractionComment,
 } from './rule-feed'
-import { applyDemoToggle, clearAllDemoToggles } from './demo-toggles'
+import { clearAllDemoToggles } from './demo-toggles'
 import { armSpawnLoop, clearSpawnLoop, pageKey } from './spawn-loop'
 import { runtime } from './state'
 
@@ -30,14 +30,14 @@ export function showModelWaitStatus(state: RuntimeState): void {
     return
   }
   if (model.status === 'unsupported') {
-    runtime.renderer.showStatus(runtimeMessage(runtime.language, 'webgpuUnsupported'), 'error')
+    runtime.renderer.showStatus(USER_MESSAGES.webgpuUnsupported, 'error')
     return
   }
   if (model.status === 'downloading' || model.status === 'loading') {
-    runtime.renderer.showStatus(runtimeMessage(runtime.language, 'modelLoading'), 'info', 'corner')
+    runtime.renderer.showStatus(USER_MESSAGES.modelLoading, 'info', 'corner')
     return
   }
-  runtime.renderer.showStatus(runtimeMessage(runtime.language, 'modelPending'), 'info', 'corner')
+  runtime.renderer.showStatus(USER_MESSAGES.modelPending, 'info', 'corner')
 }
 
 export function clearTimers(): void {
@@ -158,15 +158,11 @@ export async function handlePageNavigation(): Promise<void> {
 function armAmbientLoop(modelPending: boolean): void {
   if (FEATURES.gemmaOnlyComments) return
   if (runtime.ambientTimer != null) window.clearInterval(runtime.ambientTimer)
-  runtime.ambientTimer = null
-  // The light local crowd only exists while the on-device model is unavailable.
-  // Once Gemma is ready, page-aware output is the normal stream.
-  if (!modelPending) return
-  const interval = DISPLAY.modelWaitAmbientIntervalMs
+  const interval = modelPending ? DISPLAY.modelWaitAmbientIntervalMs : DISPLAY.ambientIntervalMs
   runtime.ambientTimer = window.setInterval(() => {
     if (!isExtensionContextValid() || !runtime.allowed) return
     if (runtime.buffer && !runtime.buffer.needsRefill()) return
-    refillAmbientComments(runtime.language, true)
+    refillAmbientComments(runtime.language, modelPending && !runtime.modelReady)
   }, interval)
 }
 
@@ -191,7 +187,7 @@ export function startRuntime(state: RuntimeState): void {
     runtime.renderer?.destroy()
     ensureOverlayRoot()
     runtime.renderer = new CommentRenderer()
-    runtime.renderer.showStatus(runtimeMessage(runtime.language, 'privatePage'), 'info')
+    runtime.renderer.showStatus(USER_MESSAGES.privatePage(runtime.language), 'info')
     return
   }
 
@@ -220,7 +216,6 @@ export function startRuntime(state: RuntimeState): void {
   }
 
   mountControls(false)
-  if (state.settings.buzzMode) applyDemoToggle('force_buzz', true)
 
   runtime.detector?.dispose()
   runtime.detector = new InteractionDetector((event) => {

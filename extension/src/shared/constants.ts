@@ -1,10 +1,9 @@
 /** Spec §11 — provisional queue values */
 export const QUEUE = {
-  batchSize: 12,
-  minBuffer: 10,
-  targetBuffer: 28,
-  /** A festival needs enough runway to keep the full-screen stream unbroken. */
-  maxBuffer: 144,
+  batchSize: 8,
+  minBuffer: 4,
+  targetBuffer: 16,
+  maxBuffer: 32,
   ttlMs: 90_000,
 } as const
 
@@ -49,8 +48,7 @@ export const INTERACTION = {
 /** Spec §13 — buzz mode */
 export const BUZZ = {
   startAfterMs: 60 * 60_000,
-  /** A long-browsing celebration is deliberately finite. */
-  durationMs: 5 * 60_000,
+  durationMs: 15 * 60_000,
   awayResetMs: 15 * 60_000,
   idleGapMs: 60_000,
   tickMs: 5_000,
@@ -93,12 +91,12 @@ export const DISPLAY = {
   minDurationMs: 4_500,
   maxDurationMs: 16_000,
   /** Caps; actual lane count also scales with viewport height. */
-  normalLaneCount: 12,
-  busyLaneCount: 16,
-  buzzLaneCount: 58,
-  spawnIntervalNormalMs: 820,
-  spawnIntervalBusyMs: 580,
-  spawnIntervalBuzzMs: 42,
+  normalLaneCount: 9,
+  busyLaneCount: 13,
+  buzzLaneCount: 18,
+  spawnIntervalNormalMs: 2_000,
+  spawnIntervalBusyMs: 1_100,
+  spawnIntervalBuzzMs: 380,
   /** Multiply base spawn interval by random factor in [min, max] */
   spawnJitterMin: 0.55,
   spawnJitterMax: 1.85,
@@ -109,16 +107,16 @@ export const DISPLAY = {
   spawnPauseMultiplierMin: 2.0,
   spawnPauseMultiplierMax: 3.6,
   /** Extra random gap between comments inside the same burst (ms). */
-  burstStaggerMinMs: 24,
-  burstStaggerMaxMs: 120,
+  burstStaggerMinMs: 80,
+  burstStaggerMaxMs: 420,
   /** Per-comment font scale multiplier range */
   fontSizeScaleMin: 0.78,
   fontSizeScaleMax: 1.48,
-  ambientIntervalMs: 4_500,
-  modelWaitAmbientIntervalMs: 5_000,
-  /** Small local fallback batches keep the stream continuous between Gemma responses. */
+  ambientIntervalMs: 14_000,
+  modelWaitAmbientIntervalMs: 10_000,
+  /** Rule-based ambient refill only while the model is not ready */
   ruleBootBatch: 4,
-  ruleAmbientBatch: 4,
+  ruleAmbientBatch: 3,
 } as const
 
 /** DOM extraction limits (content script). */
@@ -135,19 +133,15 @@ export const GENERATION = {
   // Total token budget (input + output) for the on-device LLM executor.
   // Page-context prompts can reach ~700+ tokens, so this must comfortably
   // exceed the prompt size plus generated output or generation is rejected.
-  // Buzz prompts omit page text, so the larger budget is spent on many more
-  // short reactions rather than on explaining the page back to the user.
-  maxSequenceTokens: 4_096,
-  gemmaBatchCap: 12,
-  gemmaRefillMinGapMs: 2_600,
-  buzzBatchCap: 20,
-  buzzRefillMinGapMs: 1_100,
+  maxSequenceTokens: 2_048,
+  gemmaBatchCap: 8,
+  gemmaRefillMinGapMs: 5_000,
   contextRefreshMs: 20_000,
 } as const
 
-/** Gemma leads normal browsing; local crowd lines are reserved for model loading. */
+/** Temporary: only show Gemma-generated comments (no rule-based ambient fallbacks). */
 export const FEATURES = {
-  gemmaOnlyComments: false,
+  gemmaOnlyComments: true,
   /**
    * Operation reactions (scroll / idle / mouse / etc.) flow even in Gemma-only mode.
    * Tagged as source: 'interaction' so they are not filtered out.

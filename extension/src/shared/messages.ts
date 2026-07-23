@@ -9,12 +9,9 @@ import type {
   PageContext,
   ResolvedLanguage,
 } from './types'
-import type { RuntimeMessageKey } from './user-messages'
 
 export type MurmurMessage =
   | { type: 'GET_STATE' }
-  /** Popup → active content script. This does not go through the service worker. */
-  | { type: 'GET_PAGE_STATUS' }
   | { type: 'STATE'; payload: RuntimeState }
   | { type: 'SET_ENABLED'; enabled: boolean }
   | { type: 'SET_PAUSED'; paused: boolean }
@@ -45,7 +42,7 @@ export type MurmurMessage =
   | { type: 'OFFSCREEN_MODEL_PROGRESS'; progress: number; bytesTotal: number | null }
   | { type: 'OFFSCREEN_MODEL_READY' }
   | { type: 'OFFSCREEN_MODEL_ERROR'; message: string }
-  | { type: 'SHOW_STATUS'; message?: string; messageKey?: RuntimeMessageKey; level: 'info' | 'error' | 'warn'; placement?: 'corner' | 'center' }
+  | { type: 'SHOW_STATUS'; message: string; level: 'info' | 'error' | 'warn'; placement?: 'corner' | 'center' }
   | { type: 'CLEAR_STATUS' }
   | { type: 'DEMO_TRIGGER'; kind: DemoTrigger; active: boolean }
 

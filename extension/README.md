@@ -1,14 +1,6 @@
 # GemMurmur Extension
 
-## Load in Chrome（ビルド不要）
-
-リポジトリ同梱の **`dist`** フォルダを読み込んでください（`extension` 直下や `manifest.json` ファイルではない）:
-
-1. Open `chrome://extensions`
-2. Enable Developer mode (top-right)
-3. Load unpacked → choose `extension/dist`
-
-## Build（ソースを変更したとき）
+## Build
 
 ```bash
 npm install
@@ -16,6 +8,14 @@ npm run build
 ```
 
 **バージョン更新**: `package.json` の `version` を上げてから `npm run build`。ポップアップ右上と `chrome://extensions` の両方に反映されます。
+
+## Load in Chrome
+
+Load the **`dist`** folder (do NOT select the `extension` source folder or the `manifest.json` file):
+
+1. Open `chrome://extensions`
+2. Enable Developer mode (top-right)
+3. Load unpacked → choose `extension/dist`
 
 ```bash
 npm run open-extension

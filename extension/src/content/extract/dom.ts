@@ -145,7 +145,7 @@ export function extractPageContext(): PageContext {
   const title = document.title.trim()
   const description = metaDescription()
   const languageSample = [title, description, ...headings].join('\n')
-  const language = detectLanguageFromText(languageSample, document.documentElement.lang)
+  const language = detectLanguageFromText(languageSample)
   const kind = detectPageKind(url, title, languageSample)
   const { viewport, nearby } = collectViewportText(kind)
   const alts = imageAlts()
